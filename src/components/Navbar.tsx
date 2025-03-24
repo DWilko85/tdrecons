@@ -4,7 +4,13 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Database, Home, Settings } from "lucide-react";
 
+// Added RouteAwareNavbar wrapper
 const Navbar: React.FC = () => {
+  return <RouteAwareNavbar />;
+};
+
+// Components that use router hooks are separated
+const RouteAwareNavbar: React.FC = () => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
 
