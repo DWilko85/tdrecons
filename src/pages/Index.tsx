@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,7 @@ const Index = () => {
       <section className="pt-32 pb-20 md:pt-40 md:pb-32 bg-gradient-to-b from-background to-background/90">
         <div className="container max-w-6xl">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <AnimatedTransition type="slide-right">
+            <AnimatedTransition type="fade">
               <div className="space-y-6">
                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary">
                   Data Reconciliation Made Simple
