@@ -1,97 +1,58 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Database, BarChart2, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Database, Home, Settings } from "lucide-react";
 
-// Added RouteAwareNavbar wrapper
-const Navbar: React.FC = () => {
-  return <RouteAwareNavbar />;
+export interface NavbarProps {
+  className?: string;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ className }) => {
+  // A small trick to not try to use useLocation at the top level which would cause an error
+  // when we render this component in App.tsx outside of a Router context
+  return <RouteAwareNavbar className={className} />;
 };
 
-// Components that use router hooks are separated
-const RouteAwareNavbar: React.FC = () => {
+// This component is only rendered when inside a Router context
+const RouteAwareNavbar = ({ className }: NavbarProps) => {
   const location = useLocation();
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const isScrolled = window.scrollY > 10;
-      if (isScrolled !== scrolled) {
-        setScrolled(isScrolled);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [scrolled]);
-
-  const navItems = [
-    { name: "Home", path: "/", icon: <Home className="w-4 h-4" /> },
-    { name: "Configure", path: "/configure", icon: <Settings className="w-4 h-4" /> },
-    { name: "Reconcile", path: "/reconcile", icon: <Database className="w-4 h-4" /> },
-  ];
 
   return (
-    <nav
-      className={cn(
-        "fixed top-0 w-full z-50 transition-all-300",
-        scrolled 
-          ? "bg-white/80 backdrop-blur-lg border-b shadow-sm py-3" 
-          : "bg-transparent py-5"
-      )}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <Link 
-            to="/" 
-            className="flex items-center space-x-2 text-primary font-medium text-lg"
-          >
-            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
-              <Database className="w-5 h-5 text-primary" />
+    <header className={cn("fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b", className)}>
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-6">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="rounded-md bg-primary p-1.5">
+              <Database className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold">DataSync</span>
+            <span className="text-xl font-bold">AI Reconcile</span>
           </Link>
-
-          <div className="hidden md:flex space-x-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all-200 focus-ring",
-                  location.pathname === item.path
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground/70 hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                <span className="mr-2">{item.icon}</span>
-                {item.name}
+          
+          <nav className="hidden md:flex items-center gap-1">
+            <Button asChild variant={location.pathname === "/" ? "secondary" : "ghost"} size="sm" className="gap-1.5">
+              <Link to="/">
+                <Home className="h-4 w-4" />
+                Home
               </Link>
-            ))}
-          </div>
-
-          <div className="md:hidden flex space-x-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center p-2 rounded-full transition-all-200 focus-ring",
-                  location.pathname === item.path
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground/70 hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                {item.icon}
+            </Button>
+            <Button asChild variant={location.pathname === "/configure" ? "secondary" : "ghost"} size="sm" className="gap-1.5">
+              <Link to="/configure">
+                <Database className="h-4 w-4" />
+                Configure
               </Link>
-            ))}
-          </div>
+            </Button>
+            <Button asChild variant={location.pathname === "/reconcile" ? "secondary" : "ghost"} size="sm" className="gap-1.5">
+              <Link to="/reconcile">
+                <BarChart2 className="h-4 w-4" />
+                Reconcile
+              </Link>
+            </Button>
+          </nav>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

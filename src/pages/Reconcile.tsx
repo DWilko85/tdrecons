@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -68,7 +67,7 @@ const Reconcile = () => {
                     </Link>
                   </Button>
                 </div>
-                <h1 className="text-3xl font-bold">Reconciliation Results</h1>
+                <h1 className="text-3xl font-bold">AI Reconcile: Results</h1>
               </div>
               
               <Button 
@@ -167,7 +166,7 @@ const Reconcile = () => {
           {showLoadingState && reconciliationResults.length === 0 ? (
             <div className="text-center py-20">
               <RefreshCw className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
-              <h2 className="text-xl font-medium mb-2">Processing Data</h2>
+              <h2 className="text-xl font-medium mb-2">AI Reconcile Processing</h2>
               <p className="text-muted-foreground mb-6">Please wait while we reconcile your data sources...</p>
               <Button
                 variant="outline"
@@ -186,7 +185,7 @@ const Reconcile = () => {
             <div className="text-center py-20">
               <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-medium mb-2">No Results Available</h2>
-              <p className="text-muted-foreground mb-6">Configure your data sources to start the reconciliation process</p>
+              <p className="text-muted-foreground mb-6">Configure your data sources to start the AI reconciliation process</p>
               <Button
                 className="mx-auto"
                 onClick={() => navigate("/configure")}

@@ -1,103 +1,115 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Database, GitCompare, Settings } from "lucide-react";
+import { Database, ArrowRight } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import AnimatedTransition from "@/components/AnimatedTransition";
-import { cn } from "@/lib/utils";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen">
+      <Navbar />
+
       {/* Hero Section */}
-      <section className="flex-1 flex flex-col items-center justify-center px-4 py-20 md:py-28">
-        <AnimatedTransition 
-          type="slide-up" 
-          delay={0.1} 
-          className="container max-w-5xl text-center space-y-6"
-        >
-          <div className="space-y-2">
-            <div className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-secondary text-secondary-foreground mb-4">
-              <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
-              Data Reconciliation Made Simple
-            </div>
+      <section className="pt-32 pb-20 md:pt-40 md:pb-32 bg-gradient-to-b from-background to-background/90">
+        <div className="container max-w-6xl">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <AnimatedTransition type="slide-right">
+              <div className="space-y-6">
+                <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary">
+                  Data Reconciliation Made Simple
+                </div>
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tighter">
+                  <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">AI Reconcile</span>
+                  <br />
+                  Intelligent Data Matching
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-md">
+                  Automatically detect discrepancies between data sources and reconcile differences with powerful visualization tools.
+                </p>
+
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    size="lg" 
+                    className="gap-2 px-6" 
+                    onClick={() => navigate('/configure')}
+                  >
+                    Get Started
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </AnimatedTransition>
             
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              Effortlessly Reconcile Your <span className="text-primary">Data Sources</span>
-            </h1>
-            
-            <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Intuitively compare, match, and synchronize data between different systems. 
-              Identify discrepancies and ensure data consistency with precision.
-            </p>
+            <AnimatedTransition type="slide-up" delay={0.3}>
+              <div className="lg:pl-10">
+                <div className="aspect-video relative overflow-hidden rounded-lg border shadow-xl">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-primary/5 backdrop-blur-sm">
+                    <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                      <Database className="h-16 w-16 mb-4 text-primary" />
+                      <h3 className="text-2xl font-bold mb-2">Data Reconciliation</h3>
+                      <p className="text-muted-foreground max-w-md">
+                        Upload your data files or connect to your existing data sources to start reconciling differences.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </AnimatedTransition>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button asChild size="lg" className="px-8 gap-2">
-              <Link to="/configure">
-                Get Started
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="px-8">
-              <Link to="/reconcile">
-                View Demo
-              </Link>
-            </Button>
-          </div>
-        </AnimatedTransition>
+        </div>
       </section>
 
       {/* Features Section */}
-      <section className="bg-secondary/50 py-20">
+      <section className="py-20 bg-muted/30">
         <div className="container max-w-6xl">
-          <AnimatedTransition type="slide-up" delay={0.2}>
-            <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold">How It Works</h2>
-              <p className="text-muted-foreground mt-3 max-w-2xl mx-auto">
-                Three simple steps to reconcile your data across different sources
+          <AnimatedTransition type="fade">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-3">How AI Reconcile Works</h2>
+              <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                A streamlined approach to identify and resolve data discrepancies between different sources.
               </p>
             </div>
           </AnimatedTransition>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <AnimatedTransition 
-              type="scale" 
-              delay={0.3} 
-              className="flex flex-col"
-            >
-              <FeatureCard
-                icon={<Database className="h-6 w-6" />}
-                step={1}
-                title="Configure Data Sources"
-                description="Select and connect your primary and secondary data sources. We support various formats including CSV, JSON, and APIs."
-              />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <AnimatedTransition type="slide-up" delay={0.1}>
+              <div className="bg-background rounded-lg border p-6">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-primary">1</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Configure Sources</h3>
+                <p className="text-muted-foreground">
+                  Connect your data sources and define mapping rules for field comparisons.
+                </p>
+              </div>
             </AnimatedTransition>
-            
-            <AnimatedTransition 
-              type="scale" 
-              delay={0.4} 
-              className="flex flex-col"
-            >
-              <FeatureCard
-                icon={<Settings className="h-6 w-6" />}
-                step={2}
-                title="Map Fields"
-                description="Intuitively map corresponding fields between your data sources. Define which fields should be compared and how."
-              />
+
+            <AnimatedTransition type="slide-up" delay={0.2}>
+              <div className="bg-background rounded-lg border p-6">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-primary">2</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Run Reconciliation</h3>
+                <p className="text-muted-foreground">
+                  Process your data with intelligent matching algorithms to identify discrepancies.
+                </p>
+              </div>
             </AnimatedTransition>
-            
-            <AnimatedTransition 
-              type="scale" 
-              delay={0.5} 
-              className="flex flex-col"
-            >
-              <FeatureCard
-                icon={<GitCompare className="h-6 w-6" />}
-                step={3}
-                title="Reconcile & Analyze"
-                description="Run the reconciliation process and get detailed insights into differences, matches, and missing entries."
-              />
+
+            <AnimatedTransition type="slide-up" delay={0.3}>
+              <div className="bg-background rounded-lg border p-6">
+                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <span className="text-xl font-bold text-primary">3</span>
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Analyze Results</h3>
+                <p className="text-muted-foreground">
+                  Review differences with visual tools and take action to resolve inconsistencies.
+                </p>
+              </div>
             </AnimatedTransition>
           </div>
         </div>
@@ -105,61 +117,25 @@ const Index = () => {
 
       {/* CTA Section */}
       <section className="py-20">
-        <AnimatedTransition type="fade" delay={0.2}>
-          <div className="container max-w-5xl">
-            <div className="rounded-2xl bg-primary/5 border border-primary/10 p-8 md:p-12">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="space-y-4 text-center md:text-left">
-                  <h2 className="text-2xl md:text-3xl font-bold">Start Reconciling Your Data</h2>
-                  <p className="text-muted-foreground max-w-md">
-                    Configure your data sources and begin identifying inconsistencies in minutes.
-                  </p>
-                </div>
-                <Button asChild size="lg" className="min-w-40 gap-2">
-                  <Link to="/configure">
-                    Configure Sources
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </div>
+        <div className="container max-w-5xl">
+          <AnimatedTransition type="scale">
+            <div className="bg-gradient-to-r from-primary/20 to-primary/5 rounded-xl p-8 md:p-12 text-center">
+              <h2 className="text-3xl font-bold mb-4">Ready to Reconcile Your Data?</h2>
+              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+                Start using AI Reconcile today to automatically identify and resolve discrepancies between your data sources.
+              </p>
+              <Button 
+                size="lg" 
+                className="gap-2 px-8" 
+                onClick={() => navigate('/configure')}
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
-        </AnimatedTransition>
+          </AnimatedTransition>
+        </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t">
-        <div className="container py-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} DataSync. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-interface FeatureCardProps {
-  icon: React.ReactNode;
-  step: number;
-  title: string;
-  description: string;
-}
-
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, step, title, description }) => {
-  return (
-    <div className={cn(
-      "rounded-lg border bg-card p-6 text-card-foreground flex flex-col h-full",
-      "transition-all-200 card-hover"
-    )}>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-          {icon}
-        </div>
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary text-secondary-foreground font-medium text-sm">
-          {step}
-        </div>
-      </div>
-      <h3 className="text-xl font-medium mb-2">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
     </div>
   );
 };

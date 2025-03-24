@@ -38,7 +38,7 @@ const Configure = () => {
         <div className="container max-w-6xl">
           <AnimatedTransition type="slide-down" delay={0.1}>
             <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-3xl font-bold mb-3">Configure Data Sources</h1>
+              <h1 className="text-3xl font-bold mb-3">AI Reconcile: Configure Data Sources</h1>
               <p className="text-muted-foreground text-lg">
                 Set up your data sources and field mappings to begin the reconciliation process
               </p>
