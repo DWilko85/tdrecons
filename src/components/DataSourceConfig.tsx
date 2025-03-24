@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { 
   Card, 
@@ -31,7 +30,8 @@ import {
   ArrowLeftRight, 
   Database, 
   Plus, 
-  Trash2 
+  Trash2, 
+  Upload 
 } from "lucide-react";
 import { 
   DataSource, 
@@ -42,6 +42,13 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import AnimatedTransition from "./AnimatedTransition";
 import { Badge } from "@/components/ui/badge";
+import FileUpload from "./FileUpload";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -53,6 +60,7 @@ interface DataSourceConfigProps {
   onRemoveMapping: (index: number) => void;
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
+  onFileUpload: (data: any[], fileName: string) => DataSource | undefined;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
@@ -65,6 +73,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onRemoveMapping,
   onUpdateKeyMapping,
   onReconcile,
+  onFileUpload,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
 
@@ -75,6 +84,21 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     mappings.length > 0 && 
     keyMapping.sourceAField && 
     keyMapping.sourceBField;
+
+  // Handle file upload and set as source
+  const handleFileUploadForSourceA = (data: any[], fileName: string) => {
+    const newSource = onFileUpload(data, fileName);
+    if (newSource) {
+      onSetSourceA(newSource);
+    }
+  };
+
+  const handleFileUploadForSourceB = (data: any[], fileName: string) => {
+    const newSource = onFileUpload(data, fileName);
+    if (newSource) {
+      onSetSourceB(newSource);
+    }
+  };
 
   // Handle source A selection
   const handleSourceAChange = (value: string) => {
@@ -168,6 +192,20 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                   </Select>
                 </div>
 
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="upload">
+                    <AccordionTrigger className="text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Upload new data file
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <FileUpload onFileLoaded={handleFileUploadForSourceA} />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+
                 {sourceA && (
                   <div className="space-y-2 animate-fade-in">
                     <Label htmlFor="keyFieldA">Unique Identifier (Key Field)</Label>
@@ -231,6 +269,20 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
+
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="upload">
+                    <AccordionTrigger className="text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        <Upload className="h-4 w-4" />
+                        Upload new data file
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <FileUpload onFileLoaded={handleFileUploadForSourceB} />
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
 
                 {sourceB && (
                   <div className="space-y-2 animate-fade-in">

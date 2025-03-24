@@ -19,6 +19,7 @@ const Configure = () => {
     updateKeyMapping,
     reconcile,
     reconciliationResults,
+    addUploadedFileSource,
   } = useDataSources();
 
   // Navigate to reconcile page after running reconciliation
@@ -59,6 +60,7 @@ const Configure = () => {
             onRemoveMapping={removeMapping}
             onUpdateKeyMapping={updateKeyMapping}
             onReconcile={reconcile}
+            onFileUpload={addUploadedFileSource}
           />
         </div>
       </section>
