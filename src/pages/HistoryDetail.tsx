@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -10,6 +11,7 @@ import AnimatedTransition from "@/components/AnimatedTransition";
 import { ArrowLeft, Calendar, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import StatCard from "@/components/StatCard";
 
 const HistoryDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -189,13 +191,7 @@ const HistoryDetail = () => {
   );
 };
 
-interface StatCardProps {
-  label: string;
-  value: number;
-  icon?: React.ReactNode;
-  percentage?: number;
-}
-
+// UI components for icons
 const CheckCircle = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -228,30 +224,5 @@ const XCircle = ({ className }: { className?: string }) => (
     <path d="M9 9l6 6" />
   </svg>
 );
-
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon, percentage }) => {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <h3 className="text-2xl font-bold mt-1">{value}</h3>
-          </div>
-          {icon && (
-            <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center">
-              {icon}
-            </div>
-          )}
-        </div>
-        {percentage !== undefined && (
-          <div className="mt-2 text-xs text-muted-foreground">
-            {percentage}% of total
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-};
 
 export default HistoryDetail;

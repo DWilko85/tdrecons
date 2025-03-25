@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -74,7 +75,7 @@ const History = () => {
               <p className="text-muted-foreground">Fetching your reconciliation history...</p>
             </div>
           ) : history.length > 0 ? (
-            <HistoryList history={history} />
+            <HistoryList items={history} />
           ) : (
             <div className="text-center py-20">
               <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />

@@ -1,25 +1,23 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ReconciliationTable from "@/components/ReconciliationTable";
 import { useDataSources } from "@/hooks/useDataSources";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { 
   ArrowLeft, 
-  CheckCircle, 
   Database, 
   History, 
   RefreshCw, 
   Save, 
-  XCircle 
 } from "lucide-react";
 import AnimatedTransition from "@/components/AnimatedTransition";
-import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
+import ReconciliationStats from "@/components/ReconciliationStats";
+import SourceInfo from "@/components/SourceInfo";
 
 const Reconcile = () => {
   const navigate = useNavigate();
@@ -45,16 +43,13 @@ const Reconcile = () => {
     }
   }, [reconciliationResults, isReconciling]);
 
-  // Calculate statistics
+  // Calculate statistics for saving to the database
   const stats = {
     total: reconciliationResults.length,
     matching: reconciliationResults.filter(r => r.status === 'matching').length,
     different: reconciliationResults.filter(r => r.status === 'different').length,
     missingA: reconciliationResults.filter(r => r.status === 'missing-a').length,
     missingB: reconciliationResults.filter(r => r.status === 'missing-b').length,
-    differenceRate: reconciliationResults.length ? 
-      Math.round((reconciliationResults.filter(r => r.status !== 'matching').length / reconciliationResults.length) * 100) : 
-      0
   };
 
   // Save reconciliation to database
@@ -147,10 +142,7 @@ const Reconcile = () => {
                   onClick={reconcile}
                   disabled={isReconciling}
                 >
-                  <RefreshCw className={cn(
-                    "h-4 w-4",
-                    isReconciling ? "animate-spin" : ""
-                  )} />
+                  <RefreshCw className={isReconciling ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
                   {isReconciling ? "Processing..." : "Re-run Reconciliation"}
                 </Button>
               </div>
@@ -172,77 +164,11 @@ const Reconcile = () => {
           </div>
           
           {reconciliationResults.length > 0 && (
-            <AnimatedTransition type="slide-up" delay={0.2}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
-                <StatCard 
-                  label="Total Records"
-                  value={stats.total}
-                  icon={<Database className="h-4 w-4" />}
-                />
-                <StatCard 
-                  label="Matching"
-                  value={stats.matching}
-                  icon={<CheckCircle className="h-4 w-4 text-matching" />}
-                  percentage={stats.total ? Math.round((stats.matching / stats.total) * 100) : 0}
-                />
-                <StatCard 
-                  label="Different"
-                  value={stats.different}
-                  icon={<XCircle className="h-4 w-4 text-removed" />}
-                  percentage={stats.total ? Math.round((stats.different / stats.total) * 100) : 0}
-                />
-                <StatCard 
-                  label="Missing in Principal"
-                  value={stats.missingA}
-                  percentage={stats.total ? Math.round((stats.missingA / stats.total) * 100) : 0}
-                />
-                <StatCard 
-                  label="Missing in Counterparty"
-                  value={stats.missingB}
-                  percentage={stats.total ? Math.round((stats.missingB / stats.total) * 100) : 0}
-                />
-              </div>
-            </AnimatedTransition>
+            <ReconciliationStats results={reconciliationResults} />
           )}
           
           {config.sourceA && config.sourceB && (
-            <AnimatedTransition type="fade" delay={0.3}>
-              <div className="flex flex-col sm:flex-row items-start gap-4 mb-10 text-sm">
-                <div className="border rounded-md p-3 flex-1">
-                  <div className="text-muted-foreground mb-2">Principal</div>
-                  <div className="font-medium">{config.sourceA.name}</div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs font-normal">
-                      {config.sourceA.type.toUpperCase()}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {config.sourceA.data.length} records
-                    </span>
-                  </div>
-                </div>
-                <div className="border rounded-md p-3 flex-1">
-                  <div className="text-muted-foreground mb-2">Counterparty</div>
-                  <div className="font-medium">{config.sourceB.name}</div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" className="text-xs font-normal">
-                      {config.sourceB.type.toUpperCase()}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {config.sourceB.data.length} records
-                    </span>
-                  </div>
-                </div>
-                <div className="border rounded-md p-3 flex-1">
-                  <div className="text-muted-foreground mb-2">Key Mapping</div>
-                  <div className="font-medium">
-                    {config.keyMapping.sourceAField} ↔ {config.keyMapping.sourceBField}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-2">
-                    {config.mappings.length} field{config.mappings.length !== 1 ? 's' : ''} mapped for comparison
-                  </div>
-                </div>
-              </div>
-            </AnimatedTransition>
+            <SourceInfo config={config} />
           )}
         </div>
       </section>
@@ -291,38 +217,6 @@ const Reconcile = () => {
         isSaving={isSaving}
       />
     </div>
-  );
-};
-
-interface StatCardProps {
-  label: string;
-  value: number;
-  icon?: React.ReactNode;
-  percentage?: number;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ label, value, icon, percentage }) => {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex justify-between items-start">
-          <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <h3 className="text-2xl font-bold mt-1">{value}</h3>
-          </div>
-          {icon && (
-            <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center">
-              {icon}
-            </div>
-          )}
-        </div>
-        {percentage !== undefined && (
-          <div className="mt-2 text-xs text-muted-foreground">
-            {percentage}% of total
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 };
 
