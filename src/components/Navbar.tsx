@@ -1,80 +1,103 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Database, BarChart2, Home, LogIn, LogOut, User } from "lucide-react";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger 
+} from "@/components/ui/sheet";
+import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
 
-export interface NavbarProps {
-  className?: string;
-}
+const navigation = [
+  { name: "Home", path: "/" },
+  { name: "Configure", path: "/configure" },
+  { name: "Results", path: "/reconcile" },
+  { name: "History", path: "/history" },
+];
 
-const Navbar: React.FC<NavbarProps> = ({ className }) => {
-  // A small trick to not try to use useLocation at the top level which would cause an error
-  // when we render this component in App.tsx outside of a Router context
-  return <RouteAwareNavbar className={className} />;
-};
-
-// This component is only rendered when inside a Router context
-const RouteAwareNavbar = ({ className }: NavbarProps) => {
+const Navbar = () => {
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <header className={cn("fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-sm border-b", className)}>
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="rounded-md bg-primary p-1.5">
-              <Database className="h-5 w-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold">AI Reconcile</span>
-          </Link>
-          
-          <nav className="hidden md:flex items-center gap-1">
-            <Button asChild variant={location.pathname === "/" ? "secondary" : "ghost"} size="sm" className="gap-1.5">
-              <Link to="/">
-                <Home className="h-4 w-4" />
-                Home
-              </Link>
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-40 transition-all duration-200",
+        isScrolled
+          ? "bg-background/80 backdrop-blur-md border-b py-3"
+          : "bg-transparent py-5"
+      )}
+    >
+      <div className="container flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-semibold text-sm">AI</span>
+          </div>
+          <span className="font-bold text-lg">AI Reconcile</span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navigation.map((item) => (
+            <Button
+              key={item.name}
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "px-3",
+                location.pathname === item.path
+                  ? "bg-muted font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              asChild
+            >
+              <Link to={item.path}>{item.name}</Link>
             </Button>
-            <Button asChild variant={location.pathname === "/configure" ? "secondary" : "ghost"} size="sm" className="gap-1.5">
-              <Link to="/configure">
-                <Database className="h-4 w-4" />
-                Configure
-              </Link>
+          ))}
+        </nav>
+
+        {/* Mobile Navigation */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" size="icon">
+              <Menu className="h-5 w-5" />
             </Button>
-            <Button asChild variant={location.pathname === "/reconcile" ? "secondary" : "ghost"} size="sm" className="gap-1.5">
-              <Link to="/reconcile">
-                <BarChart2 className="h-4 w-4" />
-                Reconcile
-              </Link>
-            </Button>
-          </nav>
-        </div>
-        
-        {/* Auth Actions */}
-        <div className="flex items-center gap-2">
-          {user ? (
-            <>
-              <div className="hidden md:block text-sm mr-2">
-                {user.email}
-              </div>
-              <Button variant="outline" size="sm" onClick={() => signOut()} className="gap-1.5">
-                <LogOut className="h-4 w-4" />
-                <span className="hidden md:inline">Sign Out</span>
-              </Button>
-            </>
-          ) : (
-            <Button asChild variant="outline" size="sm" className="gap-1.5">
-              <Link to="/auth">
-                <LogIn className="h-4 w-4" />
-                <span className="hidden md:inline">Sign In</span>
-              </Link>
-            </Button>
-          )}
-        </div>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-72">
+            <SheetHeader className="text-left">
+              <SheetTitle>AI Reconcile</SheetTitle>
+            </SheetHeader>
+            <nav className="flex flex-col gap-1 mt-6">
+              {navigation.map((item) => (
+                <Button
+                  key={item.name}
+                  variant={location.pathname === item.path ? "secondary" : "ghost"}
+                  className="justify-start"
+                  asChild
+                  onClick={() => setIsSheetOpen(false)}
+                >
+                  <Link to={item.path}>{item.name}</Link>
+                </Button>
+              ))}
+            </nav>
+          </SheetContent>
+        </Sheet>
       </div>
     </header>
   );

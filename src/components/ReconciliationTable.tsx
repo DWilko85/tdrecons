@@ -38,11 +38,13 @@ import AnimatedTransition from "./AnimatedTransition";
 interface ReconciliationTableProps {
   results: ReconciliationResult[];
   isLoading?: boolean;
+  isHistoryView?: boolean;
 }
 
 const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
   results,
   isLoading = false,
+  isHistoryView = false,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<Record<string, boolean>>({
@@ -313,14 +315,14 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                         <TableHead>
                           {field.name}
                           <div className="flex text-xs text-muted-foreground space-x-4 mt-1">
-                            <span>Source A</span>
-                            <span>Source B</span>
+                            <span>Principal</span>
+                            <span>Counterparty</span>
                           </div>
                         </TableHead>
                       )}
                     </React.Fragment>
                   ))}
-                  <TableHead className="w-10"></TableHead>
+                  {!isHistoryView && <TableHead className="w-10"></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -406,20 +408,22 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                         </React.Fragment>
                       ))}
                       
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Add Note</DropdownMenuItem>
-                            <DropdownMenuItem>Mark as Reviewed</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      {!isHistoryView && (
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>View Details</DropdownMenuItem>
+                              <DropdownMenuItem>Add Note</DropdownMenuItem>
+                              <DropdownMenuItem>Mark as Reviewed</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 )}

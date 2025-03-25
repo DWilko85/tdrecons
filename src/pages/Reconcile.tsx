@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -6,9 +7,21 @@ import { useDataSources } from "@/hooks/useDataSources";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, CheckCircle, Database, RefreshCw, XCircle } from "lucide-react";
+import { 
+  ArrowLeft, 
+  CheckCircle, 
+  Clock, 
+  Database, 
+  History, 
+  RefreshCw, 
+  Save, 
+  XCircle 
+} from "lucide-react";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
 
 const Reconcile = () => {
   const navigate = useNavigate();
@@ -19,6 +32,8 @@ const Reconcile = () => {
     reconcile
   } = useDataSources();
   const [showLoadingState, setShowLoadingState] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // If no results, redirect to configure page
   useEffect(() => {
@@ -42,6 +57,51 @@ const Reconcile = () => {
     differenceRate: reconciliationResults.length ? 
       Math.round((reconciliationResults.filter(r => r.status !== 'matching').length / reconciliationResults.length) * 100) : 
       0
+  };
+
+  // Save reconciliation to database
+  const saveReconciliation = async (name: string, description: string) => {
+    if (!config.sourceA || !config.sourceB || reconciliationResults.length === 0) {
+      toast.error("No reconciliation data to save");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast.error("You must be logged in to save reconciliations");
+        setSaveDialogOpen(false);
+        return;
+      }
+
+      const { error } = await supabase.from('reconciliation_history').insert({
+        name,
+        description,
+        source_a_name: config.sourceA.name,
+        source_b_name: config.sourceB.name,
+        total_records: stats.total,
+        matching_records: stats.matching,
+        different_records: stats.different,
+        missing_a_records: stats.missingA,
+        missing_b_records: stats.missingB,
+        results: reconciliationResults,
+        user_id: sessionData.session.user.id
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Reconciliation saved successfully");
+      setSaveDialogOpen(false);
+    } catch (error) {
+      console.error("Error saving reconciliation:", error);
+      toast.error("Failed to save reconciliation");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -70,19 +130,45 @@ const Reconcile = () => {
                 <h1 className="text-3xl font-bold">AI Reconcile: Results</h1>
               </div>
               
-              <Button 
-                className="gap-2 w-full sm:w-auto" 
-                onClick={reconcile}
-                disabled={isReconciling}
-              >
-                <RefreshCw className={cn(
-                  "h-4 w-4",
-                  isReconciling ? "animate-spin" : ""
-                )} />
-                {isReconciling ? "Processing..." : "Re-run Reconciliation"}
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
+                <Button 
+                  variant="outline"
+                  className="gap-2" 
+                  onClick={() => setSaveDialogOpen(true)}
+                  disabled={isReconciling || reconciliationResults.length === 0}
+                >
+                  <Save className="h-4 w-4" />
+                  <span>Save Results</span>
+                </Button>
+                
+                <Button 
+                  className="gap-2" 
+                  onClick={reconcile}
+                  disabled={isReconciling}
+                >
+                  <RefreshCw className={cn(
+                    "h-4 w-4",
+                    isReconciling ? "animate-spin" : ""
+                  )} />
+                  {isReconciling ? "Processing..." : "Re-run Reconciliation"}
+                </Button>
+              </div>
             </div>
           </AnimatedTransition>
+          
+          <div className="flex items-center gap-3 mb-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-muted-foreground hover:text-foreground"
+              asChild
+            >
+              <Link to="/history">
+                <History className="h-3.5 w-3.5" />
+                <span>View History</span>
+              </Link>
+            </Button>
+          </div>
           
           {reconciliationResults.length > 0 && (
             <AnimatedTransition type="slide-up" delay={0.2}>
@@ -105,12 +191,12 @@ const Reconcile = () => {
                   percentage={stats.total ? Math.round((stats.different / stats.total) * 100) : 0}
                 />
                 <StatCard 
-                  label="Missing in A"
+                  label="Missing in Principal"
                   value={stats.missingA}
                   percentage={stats.total ? Math.round((stats.missingA / stats.total) * 100) : 0}
                 />
                 <StatCard 
-                  label="Missing in B"
+                  label="Missing in Counterparty"
                   value={stats.missingB}
                   percentage={stats.total ? Math.round((stats.missingB / stats.total) * 100) : 0}
                 />
@@ -122,7 +208,7 @@ const Reconcile = () => {
             <AnimatedTransition type="fade" delay={0.3}>
               <div className="flex flex-col sm:flex-row items-start gap-4 mb-10 text-sm">
                 <div className="border rounded-md p-3 flex-1">
-                  <div className="text-muted-foreground mb-2">Source A</div>
+                  <div className="text-muted-foreground mb-2">Principal</div>
                   <div className="font-medium">{config.sourceA.name}</div>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="outline" className="text-xs font-normal">
@@ -134,7 +220,7 @@ const Reconcile = () => {
                   </div>
                 </div>
                 <div className="border rounded-md p-3 flex-1">
-                  <div className="text-muted-foreground mb-2">Source B</div>
+                  <div className="text-muted-foreground mb-2">Counterparty</div>
                   <div className="font-medium">{config.sourceB.name}</div>
                   <div className="flex items-center gap-2 mt-2">
                     <Badge variant="outline" className="text-xs font-normal">
@@ -196,6 +282,13 @@ const Reconcile = () => {
           )}
         </div>
       </section>
+      
+      <SaveReconciliationDialog
+        open={saveDialogOpen}
+        onOpenChange={setSaveDialogOpen}
+        onSave={saveReconciliation}
+        isSaving={isSaving}
+      />
     </div>
   );
 };

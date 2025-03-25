@@ -8,6 +8,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Configure from "./pages/Configure";
 import Reconcile from "./pages/Reconcile";
+import History from "./pages/History";
+import HistoryDetail from "./pages/HistoryDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { MotionConfig } from "framer-motion";
@@ -28,6 +30,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/configure" element={<Configure />} />
                 <Route path="/reconcile" element={<Reconcile />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/history/:id" element={<HistoryDetail />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
