@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -10,7 +9,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   ArrowLeft, 
   CheckCircle, 
-  Clock, 
   Database, 
   History, 
   RefreshCw, 
@@ -76,6 +74,9 @@ const Reconcile = () => {
         return;
       }
 
+      // Convert reconciliationResults to a JSON-compatible format
+      const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
+
       const { error } = await supabase.from('reconciliation_history').insert({
         name,
         description,
@@ -86,7 +87,7 @@ const Reconcile = () => {
         different_records: stats.different,
         missing_a_records: stats.missingA,
         missing_b_records: stats.missingB,
-        results: reconciliationResults,
+        results: resultsForDb,
         user_id: sessionData.session.user.id
       });
 
