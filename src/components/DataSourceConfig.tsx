@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { 
   Card, 
@@ -164,11 +165,11 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           <Card className="border border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <Badge className="w-fit mb-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
-                Source A
+                Principal
               </Badge>
-              <CardTitle className="text-xl">Primary Data Source</CardTitle>
+              <CardTitle className="text-xl">Principal Data</CardTitle>
               <CardDescription>
-                Select your main data source for reconciliation
+                Select your principal data source for reconciliation
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-4">
@@ -242,11 +243,11 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           <Card className="border border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <Badge className="w-fit mb-2 bg-secondary text-secondary-foreground border-secondary/50 hover:bg-secondary/80">
-                Source B
+                Counterparty
               </Badge>
-              <CardTitle className="text-xl">Secondary Data Source</CardTitle>
+              <CardTitle className="text-xl">Counterparty Data</CardTitle>
               <CardDescription>
-                Select the data source to compare against
+                Select the counterparty data source to compare against
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-4">
@@ -346,9 +347,9 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead className="w-[32%]">Source A Field</TableHead>
+                        <TableHead className="w-[32%]">Principal Field</TableHead>
                         <TableHead className="w-8 px-0 text-center"></TableHead>
-                        <TableHead className="w-[32%]">Source B Field</TableHead>
+                        <TableHead className="w-[32%]">Counterparty Field</TableHead>
                         <TableHead>Display Name</TableHead>
                         <TableHead className="w-12"></TableHead>
                       </TableRow>
