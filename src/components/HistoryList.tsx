@@ -1,71 +1,81 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BarChart3, Calendar, Check, Clock, Eye, FileIcon, X } from "lucide-react";
-import { ReconciliationHistory } from "@/types/reconciliation";
+import { Database, CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import { formatRelativeTime } from "@/lib/date-utils";
+import { ReconciliationHistory } from "@/types/reconciliation";
 
-interface HistoryListProps {
-  histories: ReconciliationHistory[];
+export interface HistoryListProps {
+  items: ReconciliationHistory[];
 }
 
-const HistoryList: React.FC<HistoryListProps> = ({ histories }) => {
+const HistoryList: React.FC<HistoryListProps> = ({ items }) => {
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-20">
+        <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+        <h2 className="text-xl font-medium mb-2">No Reconciliation History</h2>
+        <p className="text-muted-foreground mb-6">Run and save your first reconciliation to see it here</p>
+        <Button
+          className="mx-auto"
+          asChild
+        >
+          <Link to="/configure">Start New Reconciliation</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {histories.map((history) => (
-        <Card key={history.id} className="border overflow-hidden hover:shadow-md transition-shadow">
-          <CardHeader className="pb-2">
-            <CardTitle className="truncate text-lg">{history.name}</CardTitle>
-            <CardDescription className="flex items-center gap-1 text-xs">
-              <Clock className="h-3 w-3" />
-              <span>{formatRelativeTime(new Date(history.created_at))}</span>
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="text-muted-foreground">Total Records:</div>
-                <div className="font-medium">{history.total_records}</div>
-              </div>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-xs">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1">
-                    <Check className="h-3 w-3 text-matching" />
-                    <span>Matching</span>
+    <div className="space-y-4">
+      {items.map((item) => {
+        const date = new Date(item.created_at);
+        const matchingRate = Math.round((item.matching_records / item.total_records) * 100);
+        const differenceRate = 100 - matchingRate;
+
+        return (
+          <Card key={item.id} className="transition-all hover:shadow-md">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold">{item.name}</h3>
+                  {item.description && (
+                    <p className="text-muted-foreground text-sm mt-1">{item.description}</p>
+                  )}
+                  <div className="flex items-center gap-6 mt-2">
+                    <div className="flex items-center gap-1.5">
+                      <Database className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-sm">{item.total_records} records</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle className="h-3.5 w-3.5 text-matching" />
+                      <span className="text-sm">{matchingRate}% matching</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <XCircle className="h-3.5 w-3.5 text-removed" />
+                      <span className="text-sm">{differenceRate}% different</span>
+                    </div>
                   </div>
-                  <span className="font-medium">{history.matching_records}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-1">
-                    <X className="h-3 w-3 text-removed" />
-                    <span>Different</span>
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="text-xs text-muted-foreground">{formatRelativeTime(date)}</div>
+                    <div className="text-xs px-2 py-0.5 bg-muted rounded-full">
+                      {item.source_a_name} ⟷ {item.source_b_name}
+                    </div>
                   </div>
-                  <span className="font-medium">{history.different_records}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Missing A</span>
-                  <span className="font-medium">{history.missing_a_records}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Missing B</span>
-                  <span className="font-medium">{history.missing_b_records}</span>
-                </div>
+                <Button asChild variant="ghost" size="sm" className="mt-2 md:mt-0 self-start md:self-center">
+                  <Link to={`/history/${item.id}`}>
+                    <span>View Details</span>
+                    <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  </Link>
+                </Button>
               </div>
-            </div>
-          </CardContent>
-          <CardFooter className="border-t bg-muted/20 py-2 px-3 flex justify-end">
-            <Button size="sm" variant="outline" asChild className="h-7 gap-1">
-              <Link to={`/history/${history.id}`}>
-                <Eye className="h-3.5 w-3.5" />
-                <span>View Details</span>
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 };
