@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -31,6 +30,15 @@ const Reconcile = () => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // For debugging
+  useEffect(() => {
+    console.log("Render state:", { 
+      resultsLength: reconciliationResults.length, 
+      isReconciling, 
+      showLoadingState 
+    });
+  }, [reconciliationResults, isReconciling, showLoadingState]);
+
   // If no results and not currently reconciling, show loading state
   useEffect(() => {
     if (reconciliationResults.length === 0 && !isReconciling) {
@@ -57,8 +65,9 @@ const Reconcile = () => {
 
   // Trigger reconciliation
   const handleReconcile = () => {
-    setShowLoadingState(false); // Reset loading state
-    reconcile();
+    // Reset loading state and run reconciliation
+    setShowLoadingState(false);
+    reconcile(config);
   };
 
   // Save reconciliation to database
@@ -80,6 +89,9 @@ const Reconcile = () => {
 
       // Convert reconciliationResults to a JSON-compatible format
       const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
+
+      // For debugging
+      console.log("Saving reconciliation with", reconciliationResults.length, "records");
 
       const { error } = await supabase.from('reconciliation_history').insert({
         name,

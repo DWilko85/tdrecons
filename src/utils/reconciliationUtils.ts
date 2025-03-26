@@ -79,5 +79,8 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
     });
   });
   
+  // Log for debugging
+  console.log(`Reconciliation generated ${results.length} results`);
+  
   return results;
 };

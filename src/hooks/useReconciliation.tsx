@@ -15,26 +15,23 @@ export function useReconciliation() {
       return;
     }
     
-    setIsReconciling(true);
-    
     try {
-      // Add a small delay to ensure state updates are processed
-      await new Promise(resolve => setTimeout(resolve, 100));
+      setIsReconciling(true);
       
+      // Get results synchronously first
       const results = performReconciliation(config);
       
-      // Clear any previous results and set the new ones
-      setReconciliationResults([]);
+      // Important: Set results immediately instead of clearing first
+      setReconciliationResults(results);
       
-      // Use setTimeout to ensure the UI updates properly
-      setTimeout(() => {
-        setReconciliationResults(results);
-        toast.success(`Reconciliation complete: ${results.length} records processed`);
-        setIsReconciling(false);
-      }, 200);
+      toast.success(`Reconciliation complete: ${results.length} records processed`);
+      
+      // Log to make debugging easier
+      console.log("Reconciliation completed with", results.length, "records");
     } catch (error) {
       console.error("Reconciliation error:", error);
       toast.error("Failed to reconcile data sources");
+    } finally {
       setIsReconciling(false);
     }
   };
