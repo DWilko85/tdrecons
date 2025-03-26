@@ -40,10 +40,17 @@ const Reconcile = () => {
     });
   }, [reconciliationResults, isReconciling, showLoadingState]);
 
-  // If no results and not currently reconciling, show loading state
+  // If reconciling, don't show loading state
+  useEffect(() => {
+    if (isReconciling) {
+      setShowLoadingState(false);
+    }
+  }, [isReconciling]);
+
+  // If no results and not currently reconciling, show loading state after a delay
   useEffect(() => {
     if (reconciliationResults.length === 0 && !isReconciling) {
-      // Small delay to prevent flash
+      // Show loading state after a small delay to prevent flashing
       const timeout = setTimeout(() => {
         setShowLoadingState(true);
       }, 500);
@@ -198,17 +205,22 @@ const Reconcile = () => {
       {/* Results Table */}
       <section>
         <div className="container max-w-6xl">
-          {showLoadingState && reconciliationResults.length === 0 ? (
+          {isReconciling ? (
             <div className="text-center py-20">
               <RefreshCw className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
               <h2 className="text-xl font-medium mb-2">AI Reconcile Processing</h2>
               <p className="text-muted-foreground mb-6">Please wait while we reconcile your data sources...</p>
+            </div>
+          ) : showLoadingState && reconciliationResults.length === 0 ? (
+            <div className="text-center py-20">
+              <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-xl font-medium mb-2">No Results Available</h2>
+              <p className="text-muted-foreground mb-6">Run the reconciliation process to generate results</p>
               <Button
-                variant="outline"
                 className="mx-auto"
-                onClick={() => navigate("/configure")}
+                onClick={handleReconcile}
               >
-                Back to Configuration
+                Start Reconciliation
               </Button>
             </div>
           ) : reconciliationResults.length > 0 ? (

@@ -10,14 +10,34 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
   const { sourceA, sourceB, mappings, keyMapping } = config;
   const results: ReconciliationResult[] = [];
   
+  console.log("Starting reconciliation with:", {
+    sourceA: sourceA.name,
+    sourceARecords: sourceA.data.length,
+    sourceB: sourceB.name,
+    sourceBRecords: sourceB.data.length,
+    keyMappingA: keyMapping.sourceAField,
+    keyMappingB: keyMapping.sourceBField
+  });
+  
   // Create a map of source B items by key for quick lookup
   const sourceBMap = new Map(
-    sourceB.data.map(item => [item[keyMapping.sourceBField], item])
+    sourceB.data.map(item => {
+      const key = item[keyMapping.sourceBField];
+      return [key, item];
+    })
   );
+  
+  console.log(`Created sourceBMap with ${sourceBMap.size} entries`);
   
   // Process all items from source A
   sourceA.data.forEach(itemA => {
     const keyA = itemA[keyMapping.sourceAField];
+    
+    if (keyA === undefined || keyA === null) {
+      console.warn(`Item in source A is missing key field: ${keyMapping.sourceAField}`);
+      return;
+    }
+    
     const itemB = sourceBMap.get(keyA);
     
     if (itemB) {
@@ -79,8 +99,12 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
     });
   });
   
-  // Log for debugging
-  console.log(`Reconciliation generated ${results.length} results`);
+  console.log(`Reconciliation generated ${results.length} results with statuses:`, {
+    matching: results.filter(r => r.status === 'matching').length,
+    different: results.filter(r => r.status === 'different').length,
+    missingA: results.filter(r => r.status === 'missing-a').length,
+    missingB: results.filter(r => r.status === 'missing-b').length,
+  });
   
   return results;
 };

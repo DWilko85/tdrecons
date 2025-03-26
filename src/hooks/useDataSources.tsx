@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   DataSource, 
   DataSourceConfig, 
@@ -71,9 +71,14 @@ export function useDataSources() {
   }, [availableSources]);
 
   // Wrapper around the reconcile function that uses the current config
-  const reconcile = () => {
+  const reconcile = useCallback(() => {
+    console.log("Reconcile called with config:", {
+      sourceA: config.sourceA?.name,
+      sourceB: config.sourceB?.name,
+      mappings: config.mappings.length
+    });
     performReconcile(config);
-  };
+  }, [config, performReconcile]);
 
   return {
     availableSources,
