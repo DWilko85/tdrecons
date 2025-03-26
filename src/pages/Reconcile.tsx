@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -67,7 +68,7 @@ const Reconcile = () => {
   const handleReconcile = () => {
     // Reset loading state and run reconciliation
     setShowLoadingState(false);
-    reconcile(config);
+    reconcile(); // Fixed: Don't pass config here
   };
 
   // Save reconciliation to database
