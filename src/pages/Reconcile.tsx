@@ -31,7 +31,7 @@ const Reconcile = () => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  // If no results, redirect to configure page
+  // If no results and not currently reconciling, show loading state
   useEffect(() => {
     if (reconciliationResults.length === 0 && !isReconciling) {
       // Small delay to prevent flash
@@ -40,6 +40,9 @@ const Reconcile = () => {
       }, 500);
       
       return () => clearTimeout(timeout);
+    } else {
+      // If we have results or are reconciling, don't show loading state
+      setShowLoadingState(false);
     }
   }, [reconciliationResults, isReconciling]);
 
@@ -50,6 +53,12 @@ const Reconcile = () => {
     different: reconciliationResults.filter(r => r.status === 'different').length,
     missingA: reconciliationResults.filter(r => r.status === 'missing-a').length,
     missingB: reconciliationResults.filter(r => r.status === 'missing-b').length,
+  };
+
+  // Trigger reconciliation
+  const handleReconcile = () => {
+    setShowLoadingState(false); // Reset loading state
+    reconcile();
   };
 
   // Save reconciliation to database
@@ -139,7 +148,7 @@ const Reconcile = () => {
                 
                 <Button 
                   className="gap-2" 
-                  onClick={reconcile}
+                  onClick={handleReconcile}
                   disabled={isReconciling}
                 >
                   <RefreshCw className={isReconciling ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
