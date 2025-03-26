@@ -22,12 +22,21 @@ const Configure = () => {
     addUploadedFileSource,
   } = useDataSources();
 
-  // Navigate to reconcile page after running reconciliation
+  // Check if reconciliation has been run and navigate if needed
   useEffect(() => {
     if (reconciliationResults.length > 0) {
       navigate("/reconcile");
     }
   }, [reconciliationResults, navigate]);
+
+  // Handle the reconciliation button click
+  const handleReconcile = () => {
+    // Trigger reconciliation
+    const success = reconcile();
+    
+    // Navigate to the results page with a flag to indicate we should run reconciliation
+    navigate("/reconcile", { state: { runReconciliation: true } });
+  };
 
   return (
     <div className="min-h-screen pb-16">
@@ -59,7 +68,7 @@ const Configure = () => {
             onAddMapping={addMapping}
             onRemoveMapping={removeMapping}
             onUpdateKeyMapping={updateKeyMapping}
-            onReconcile={reconcile}
+            onReconcile={handleReconcile}
             onFileUpload={addUploadedFileSource}
           />
         </div>

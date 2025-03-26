@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ReconciliationTable from "@/components/ReconciliationTable";
 import { useDataSources } from "@/hooks/useDataSources";
@@ -21,6 +21,7 @@ import SourceInfo from "@/components/SourceInfo";
 
 const Reconcile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { 
     config, 
     reconciliationResults,
@@ -30,15 +31,32 @@ const Reconcile = () => {
   const [showLoadingState, setShowLoadingState] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Check if we're coming from Configure page with intention to reconcile
+  useEffect(() => {
+    const shouldRunReconciliation = location.state?.runReconciliation === true;
+    
+    if (shouldRunReconciliation && !initialLoadDone) {
+      console.log("Auto-triggering reconciliation due to navigation from configure page");
+      handleReconcile();
+      setInitialLoadDone(true);
+    }
+  }, [location.state, initialLoadDone]);
 
   // For debugging
   useEffect(() => {
     console.log("Render state:", { 
       resultsLength: reconciliationResults.length, 
       isReconciling, 
-      showLoadingState 
+      showLoadingState,
+      config: {
+        sourceA: config.sourceA?.name,
+        sourceB: config.sourceB?.name,
+        mappings: config.mappings.length
+      }
     });
-  }, [reconciliationResults, isReconciling, showLoadingState]);
+  }, [reconciliationResults, isReconciling, showLoadingState, config]);
 
   // If reconciling, don't show loading state
   useEffect(() => {
@@ -75,7 +93,7 @@ const Reconcile = () => {
   const handleReconcile = () => {
     // Reset loading state and run reconciliation
     setShowLoadingState(false);
-    reconcile(); // Fixed: Don't pass config here
+    reconcile();
   };
 
   // Save reconciliation to database

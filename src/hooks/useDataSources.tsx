@@ -77,8 +77,13 @@ export function useDataSources() {
       sourceB: config.sourceB?.name,
       mappings: config.mappings.length
     });
-    performReconcile(config);
-  }, [config, performReconcile]);
+    
+    // Clear previous results first to ensure we get a fresh reconciliation
+    setReconciliationResults([]);
+    
+    // Perform the reconciliation with the current config
+    return performReconcile(config);
+  }, [config, performReconcile, setReconciliationResults]);
 
   return {
     availableSources,

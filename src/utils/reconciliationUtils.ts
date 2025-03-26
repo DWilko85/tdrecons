@@ -23,6 +23,9 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
   const sourceBMap = new Map(
     sourceB.data.map(item => {
       const key = item[keyMapping.sourceBField];
+      if (key === undefined || key === null) {
+        console.warn(`Item in source B is missing key field: ${keyMapping.sourceBField}`);
+      }
       return [key, item];
     })
   );
