@@ -12,7 +12,8 @@ import { generateDefaultMappings, getDisplayName } from '@/utils/mappingUtils';
 import { performReconciliation } from '@/utils/reconciliationUtils';
 import { createUploadedFileSource } from '@/utils/fileUploadUtils';
 
-export { 
+// Re-export types with correct syntax
+export type { 
   DataSource,
   DataSourceConfig,
   FieldMapping,
