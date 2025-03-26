@@ -1,5 +1,5 @@
 
-import { ReconciliationResult } from "@/hooks/useDataSources";
+import { ReconciliationResult } from '@/types/dataSources';
 
 export interface ReconciliationHistory {
   id: string;
