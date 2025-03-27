@@ -87,7 +87,8 @@ export function useDataSources() {
   }, [config, performReconcile]);
 
   // Add a file source and optionally set it as source A or B and auto-reconcile
-  const addFileSourceAndReconcile = useCallback(async (
+  // Modified to use a non-async implementation that returns DataSource (not Promise<DataSource>)
+  const addFileSourceAndReconcile = useCallback((
     data: Record<string, any>[], 
     fileName: string,
     setAs?: 'sourceA' | 'sourceB' | 'auto',

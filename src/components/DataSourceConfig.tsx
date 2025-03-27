@@ -65,7 +65,7 @@ interface DataSourceConfigProps {
   onRemoveMapping: (index: number) => void;
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
-  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | undefined;
+  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | null | undefined;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({

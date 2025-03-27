@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -40,6 +39,7 @@ const Configure = () => {
 
   // Handle file upload with potential automatic reconciliation
   const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
+    // This function now properly returns DataSource | null | undefined to match the expected type
     const newSource = addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
     
     if (newSource && autoReconcile && config.sourceA && config.sourceB) {
