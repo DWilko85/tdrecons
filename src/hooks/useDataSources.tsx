@@ -53,26 +53,14 @@ export function useDataSources() {
   const {
     setSourceA,
     setSourceB,
-    addUploadedFileSource
+    addUploadedFileSource,
+    loadDataSources
   } = useSourceManagement(config, setConfig, availableSources, setAvailableSources);
 
-  // Set initial sources for demo
+  // Load data sources from database on initial load
   useEffect(() => {
-    if (!config.sourceA && !config.sourceB && availableSources.length >= 2) {
-      const sourceA = availableSources[0];
-      const sourceB = availableSources[1];
-      
-      setConfig({
-        sourceA,
-        sourceB,
-        mappings: generateMappings(sourceA, sourceB),
-        keyMapping: {
-          sourceAField: sourceA.keyField,
-          sourceBField: sourceB.keyField,
-        },
-      });
-    }
-  }, [availableSources]);
+    loadDataSources();
+  }, [loadDataSources]);
 
   // Wrapper around the reconcile function that uses the current config
   const reconcile = useCallback(() => {
@@ -89,69 +77,75 @@ export function useDataSources() {
   }, [config, performReconcile]);
 
   // Add a file source and optionally set it as source A or B and auto-reconcile
-  const addFileSourceAndReconcile = useCallback((
+  const addFileSourceAndReconcile = useCallback(async (
     data: Record<string, any>[], 
     fileName: string,
     setAs?: 'sourceA' | 'sourceB' | 'auto',
     autoRunReconciliation: boolean = true
-  ) => {
+  ): Promise<DataSource | null> => {
     if (!data || data.length === 0) {
       console.error("No data provided for file source");
       return null;
     }
     
     console.log(`Adding file source with ${data.length} records from ${fileName}`);
-    const newSource = addUploadedFileSource(data, fileName);
     
-    if (!newSource) {
-      console.error("Failed to create source from uploaded file");
+    try {
+      const newSource = await addUploadedFileSource(data, fileName);
+      
+      if (!newSource) {
+        console.error("Failed to create source from uploaded file");
+        return null;
+      }
+      
+      console.log("New source created:", newSource.name, "with", newSource.data.length, "records");
+      
+      // Determine where to set the new source based on the setAs parameter
+      let updatedSourceA = config.sourceA;
+      let updatedSourceB = config.sourceB;
+      
+      if (setAs === 'sourceA' || (setAs === 'auto' && !config.sourceA)) {
+        updatedSourceA = newSource;
+        console.log("Setting as source A:", newSource.name);
+        setSourceA(newSource);
+      } 
+      else if (setAs === 'sourceB' || (setAs === 'auto' && !config.sourceB && config.sourceA)) {
+        updatedSourceB = newSource;
+        console.log("Setting as source B:", newSource.name);
+        setSourceB(newSource);
+      }
+      
+      // If both sources are now set, auto-reconcile if requested
+      if (autoRunReconciliation && updatedSourceA && updatedSourceB) {
+        console.log("Auto-reconciling with sources:", updatedSourceA.name, "and", updatedSourceB.name);
+        
+        // Create an updated config for reconciliation
+        const updatedConfig = {
+          ...config,
+          sourceA: updatedSourceA,
+          sourceB: updatedSourceB,
+          // Ensure we have mappings
+          mappings: config.mappings.length > 0 ? 
+            config.mappings : 
+            generateMappings(updatedSourceA, updatedSourceB),
+          keyMapping: {
+            sourceAField: config.keyMapping.sourceAField || updatedSourceA.keyField,
+            sourceBField: config.keyMapping.sourceBField || updatedSourceB.keyField,
+          }
+        };
+        
+        // We need to wait a bit for the state to update before reconciling
+        setTimeout(() => {
+          console.log("Executing auto-reconcile with updated config");
+          autoReconcile(updatedConfig);
+        }, 300);
+      }
+      
+      return newSource;
+    } catch (error) {
+      console.error("Error in addFileSourceAndReconcile:", error);
       return null;
     }
-    
-    console.log("New source created:", newSource.name, "with", newSource.data.length, "records");
-    
-    // Determine where to set the new source based on the setAs parameter
-    let updatedSourceA = config.sourceA;
-    let updatedSourceB = config.sourceB;
-    
-    if (setAs === 'sourceA' || (setAs === 'auto' && !config.sourceA)) {
-      updatedSourceA = newSource;
-      console.log("Setting as source A:", newSource.name);
-      setSourceA(newSource);
-    } 
-    else if (setAs === 'sourceB' || (setAs === 'auto' && !config.sourceB && config.sourceA)) {
-      updatedSourceB = newSource;
-      console.log("Setting as source B:", newSource.name);
-      setSourceB(newSource);
-    }
-    
-    // If both sources are now set, auto-reconcile if requested
-    if (autoRunReconciliation && updatedSourceA && updatedSourceB) {
-      console.log("Auto-reconciling with sources:", updatedSourceA.name, "and", updatedSourceB.name);
-      
-      // Create an updated config for reconciliation
-      const updatedConfig = {
-        ...config,
-        sourceA: updatedSourceA,
-        sourceB: updatedSourceB,
-        // Ensure we have mappings
-        mappings: config.mappings.length > 0 ? 
-          config.mappings : 
-          generateMappings(updatedSourceA, updatedSourceB),
-        keyMapping: {
-          sourceAField: config.keyMapping.sourceAField || updatedSourceA.keyField,
-          sourceBField: config.keyMapping.sourceBField || updatedSourceB.keyField,
-        }
-      };
-      
-      // We need to wait a bit for the state to update before reconciling
-      setTimeout(() => {
-        console.log("Executing auto-reconcile with updated config");
-        autoReconcile(updatedConfig);
-      }, 100);
-    }
-    
-    return newSource;
   }, [addUploadedFileSource, setSourceA, setSourceB, config, autoReconcile, generateMappings]);
 
   return {
@@ -171,9 +165,7 @@ export function useDataSources() {
     autoReconcile,
     addUploadedFileSource,
     addFileSourceAndReconcile,
-    generateMappings
+    generateMappings,
+    loadDataSources
   };
 }
-
-// Need to re-import generateDefaultMappings here for the initial effect
-import { generateDefaultMappings } from '@/utils/mappingUtils';

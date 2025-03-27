@@ -5,6 +5,8 @@ import Navbar from "@/components/Navbar";
 import DataSourceConfig from "@/components/DataSourceConfig";
 import { useDataSources } from "@/hooks/useDataSources";
 import AnimatedTransition from "@/components/AnimatedTransition";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Configure = () => {
   const navigate = useNavigate();
@@ -20,7 +22,35 @@ const Configure = () => {
     reconcile,
     reconciliationResults,
     addFileSourceAndReconcile,
+    loadDataSources
   } = useDataSources();
+
+  // Load data sources on initial render
+  useEffect(() => {
+    // Check if database table exists
+    checkDatabaseTable();
+    
+    // Load data sources
+    loadDataSources();
+  }, [loadDataSources]);
+
+  // Check if database table exists and create if needed
+  const checkDatabaseTable = async () => {
+    try {
+      // Check if we can query the data_sources table
+      const { error } = await supabase
+        .from('data_sources')
+        .select('count')
+        .limit(1);
+      
+      if (error && error.code === 'PGRST116') {
+        console.log("Data sources table doesn't exist yet");
+        toast.info("Setting up database for first use...");
+      }
+    } catch (err) {
+      console.error("Error checking database table:", err);
+    }
+  };
 
   // Check if reconciliation has been run and navigate if needed
   useEffect(() => {
@@ -45,18 +75,18 @@ const Configure = () => {
   };
 
   // Handle file upload with potential automatic reconciliation
-  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
+  const handleUploadFile = async (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
-    // This function now properly returns DataSource | null | undefined to match the expected type
-    const newSource = addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
+    // This function now properly returns a Promise<DataSource | null>
+    const newSource = await addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
     
     if (newSource && autoReconcile && config.sourceA && config.sourceB) {
       // If auto-reconcile is enabled and we have both sources, navigate to results
       console.log("Auto-navigating to reconcile page after file upload");
       setTimeout(() => {
         navigate("/reconcile", { state: { runReconciliation: true } });
-      }, 300);
+      }, 500);
     }
     
     return newSource;

@@ -40,7 +40,7 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
     sourceB.data.map(item => {
       const key = item[keyMapping.sourceBField];
       if (key === undefined || key === null) {
-        console.warn(`Item in source B is missing key field: ${keyMapping.sourceBField}`);
+        console.warn(`Item in source B is missing key field: ${keyMapping.sourceBField}`, item);
       }
       return [String(key), item];
     })
@@ -53,11 +53,12 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
     const keyA = itemA[keyMapping.sourceAField];
     
     if (keyA === undefined || keyA === null) {
-      console.warn(`Item in source A is missing key field: ${keyMapping.sourceAField}`);
+      console.warn(`Item in source A is missing key field: ${keyMapping.sourceAField}`, itemA);
       return;
     }
     
-    const itemB = sourceBMap.get(String(keyA));
+    const keyAStr = String(keyA);
+    const itemB = sourceBMap.get(keyAStr);
     
     if (itemB) {
       // Both sources have this item
@@ -84,7 +85,7 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
       const hasAnyDifference = fields.some(field => !field.matching);
       
       results.push({
-        key: String(keyA),
+        key: keyAStr,
         sourceAData: itemA,
         sourceBData: itemB,
         fields,
@@ -93,7 +94,7 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
       });
       
       // Remove from map to track processed items
-      sourceBMap.delete(String(keyA));
+      sourceBMap.delete(keyAStr);
     } else {
       // Only in source A
       const fields = mappings.map(mapping => ({
@@ -107,7 +108,7 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
       }));
       
       results.push({
-        key: String(keyA),
+        key: keyAStr,
         sourceAData: itemA,
         sourceBData: null,
         fields,
