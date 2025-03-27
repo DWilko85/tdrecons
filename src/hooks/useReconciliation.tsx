@@ -10,7 +10,7 @@ export function useReconciliation() {
   const [lastConfig, setLastConfig] = useState<DataSourceConfig | null>(null);
 
   // Perform the reconciliation between the two sources
-  const reconcile = useCallback(async (config: DataSourceConfig) => {
+  const reconcile = useCallback((config: DataSourceConfig) => {
     if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
       toast.error("Please configure both data sources and field mappings");
       return Promise.resolve(false);
@@ -20,7 +20,11 @@ export function useReconciliation() {
       // Start reconciliation process
       setIsReconciling(true);
       setLastConfig(config);
-      console.log("Starting reconciliation process with sources:", config.sourceA.name, "and", config.sourceB.name);
+      console.log("Starting reconciliation process with sources:", 
+        config.sourceA.name, `(${config.sourceA.data.length} records)`, 
+        "and", 
+        config.sourceB.name, `(${config.sourceB.data.length} records)`
+      );
       
       // Get results
       const results = performReconciliation(config);
@@ -55,8 +59,17 @@ export function useReconciliation() {
   // Auto-reconcile when config changes if we have a previous config
   const autoReconcile = useCallback((config: DataSourceConfig) => {
     if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
+      console.warn("Cannot auto-reconcile: incomplete configuration");
       return false;
     }
+
+    console.log("Auto-reconciling with config:", {
+      sourceA: config.sourceA.name,
+      sourceB: config.sourceB.name,
+      mappings: config.mappings.length,
+      keyMappingA: config.keyMapping.sourceAField,
+      keyMappingB: config.keyMapping.sourceBField
+    });
 
     reconcile(config);
     return true;

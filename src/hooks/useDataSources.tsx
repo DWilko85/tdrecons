@@ -79,7 +79,9 @@ export function useDataSources() {
     console.log("Reconcile called with config:", {
       sourceA: config.sourceA?.name,
       sourceB: config.sourceB?.name,
-      mappings: config.mappings.length
+      mappings: config.mappings.length,
+      dataA: config.sourceA?.data.length,
+      dataB: config.sourceB?.data.length
     });
     
     // Perform the reconciliation with the current config
@@ -87,41 +89,70 @@ export function useDataSources() {
   }, [config, performReconcile]);
 
   // Add a file source and optionally set it as source A or B and auto-reconcile
-  // Modified to use a non-async implementation that returns DataSource (not Promise<DataSource>)
   const addFileSourceAndReconcile = useCallback((
     data: Record<string, any>[], 
     fileName: string,
     setAs?: 'sourceA' | 'sourceB' | 'auto',
     autoRunReconciliation: boolean = true
   ) => {
+    if (!data || data.length === 0) {
+      console.error("No data provided for file source");
+      return null;
+    }
+    
+    console.log(`Adding file source with ${data.length} records from ${fileName}`);
     const newSource = addUploadedFileSource(data, fileName);
     
-    if (!newSource) return null;
+    if (!newSource) {
+      console.error("Failed to create source from uploaded file");
+      return null;
+    }
+    
+    console.log("New source created:", newSource.name, "with", newSource.data.length, "records");
     
     // Determine where to set the new source based on the setAs parameter
+    let updatedSourceA = config.sourceA;
+    let updatedSourceB = config.sourceB;
+    
     if (setAs === 'sourceA' || (setAs === 'auto' && !config.sourceA)) {
+      updatedSourceA = newSource;
+      console.log("Setting as source A:", newSource.name);
       setSourceA(newSource);
     } 
     else if (setAs === 'sourceB' || (setAs === 'auto' && !config.sourceB && config.sourceA)) {
+      updatedSourceB = newSource;
+      console.log("Setting as source B:", newSource.name);
       setSourceB(newSource);
     }
     
     // If both sources are now set, auto-reconcile if requested
-    const updatedConfig = {
-      ...config,
-      sourceA: setAs === 'sourceA' ? newSource : config.sourceA,
-      sourceB: setAs === 'sourceB' ? newSource : config.sourceB
-    };
-    
-    if (autoRunReconciliation && updatedConfig.sourceA && updatedConfig.sourceB) {
+    if (autoRunReconciliation && updatedSourceA && updatedSourceB) {
+      console.log("Auto-reconciling with sources:", updatedSourceA.name, "and", updatedSourceB.name);
+      
+      // Create an updated config for reconciliation
+      const updatedConfig = {
+        ...config,
+        sourceA: updatedSourceA,
+        sourceB: updatedSourceB,
+        // Ensure we have mappings
+        mappings: config.mappings.length > 0 ? 
+          config.mappings : 
+          generateMappings(updatedSourceA, updatedSourceB),
+        keyMapping: {
+          sourceAField: config.keyMapping.sourceAField || updatedSourceA.keyField,
+          sourceBField: config.keyMapping.sourceBField || updatedSourceB.keyField,
+        }
+      };
+      
       // We need to wait a bit for the state to update before reconciling
       setTimeout(() => {
+        console.log("Executing auto-reconcile with updated config");
         autoReconcile(updatedConfig);
       }, 100);
     }
     
     return newSource;
-  }, [addUploadedFileSource, setSourceA, setSourceB, config, autoReconcile]);
+  }, [addUploadedFileSource, setSourceA, setSourceB, config, autoReconcile, generateMappings]);
 
   return {
     availableSources,

@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -30,22 +31,31 @@ const Configure = () => {
 
   // Handle the reconciliation button click
   const handleReconcile = () => {
+    console.log("Handle reconcile clicked, current config:", {
+      sourceA: config.sourceA?.name,
+      sourceB: config.sourceB?.name,
+      mappings: config.mappings.length
+    });
+    
     // Trigger reconciliation
     reconcile();
     
     // Navigate to the results page
-    navigate("/reconcile");
+    navigate("/reconcile", { state: { runReconciliation: true } });
   };
 
   // Handle file upload with potential automatic reconciliation
   const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
+    console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
+    
     // This function now properly returns DataSource | null | undefined to match the expected type
     const newSource = addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
     
     if (newSource && autoReconcile && config.sourceA && config.sourceB) {
       // If auto-reconcile is enabled and we have both sources, navigate to results
+      console.log("Auto-navigating to reconcile page after file upload");
       setTimeout(() => {
-        navigate("/reconcile");
+        navigate("/reconcile", { state: { runReconciliation: true } });
       }, 300);
     }
     
