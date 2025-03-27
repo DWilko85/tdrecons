@@ -26,7 +26,9 @@ const Reconcile = () => {
     config, 
     reconciliationResults,
     isReconciling,
-    reconcile
+    reconcile,
+    autoReconcile,
+    lastConfig
   } = useDataSources();
   const [showLoadingState, setShowLoadingState] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -37,12 +39,23 @@ const Reconcile = () => {
   useEffect(() => {
     const shouldRunReconciliation = location.state?.runReconciliation === true;
     
-    if (shouldRunReconciliation && !initialLoadDone) {
-      console.log("Auto-triggering reconciliation due to navigation from configure page");
-      handleReconcile();
-      setInitialLoadDone(true);
+    // Auto-run reconciliation if we have a config but no results yet
+    if (!initialLoadDone) {
+      if (shouldRunReconciliation) {
+        console.log("Auto-triggering reconciliation due to navigation from configure page");
+        handleReconcile();
+        setInitialLoadDone(true);
+      } else if (config.sourceA && config.sourceB && config.mappings.length > 0 && reconciliationResults.length === 0) {
+        console.log("Auto-triggering reconciliation with existing config");
+        autoReconcile(config);
+        setInitialLoadDone(true);
+      } else if (lastConfig && reconciliationResults.length === 0) {
+        console.log("Auto-triggering reconciliation with last config");
+        autoReconcile(lastConfig);
+        setInitialLoadDone(true);
+      }
     }
-  }, [location.state, initialLoadDone]);
+  }, [location.state, initialLoadDone, config, reconciliationResults, autoReconcile, lastConfig]);
 
   // For debugging
   useEffect(() => {

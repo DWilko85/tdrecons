@@ -20,12 +20,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { 
+  AlertCircle,
   Check, 
   ChevronDown,
   Download,
   Eye,
   EyeOff,
   Filter,
+  InfoIcon,
   MoreHorizontal, 
   Search, 
   SlidersHorizontal, 
@@ -34,6 +36,12 @@ import {
 import { ReconciliationResult } from "@/hooks/useDataSources";
 import { cn } from "@/lib/utils";
 import AnimatedTransition from "./AnimatedTransition";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ReconciliationTableProps {
   results: ReconciliationResult[];
@@ -54,6 +62,13 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
     'missing-b': true,
   });
   const [showOnlyDifferences, setShowOnlyDifferences] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null;
+    direction: 'ascending' | 'descending';
+  }>({
+    key: null,
+    direction: 'ascending'
+  });
 
   // Filter results based on search and status filters
   const filteredResults = results.filter(result => {
@@ -78,12 +93,65 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
     return true;
   });
 
+  // Sort results
+  const sortedResults = React.useMemo(() => {
+    let sortableItems = [...filteredResults];
+    
+    if (sortConfig.key) {
+      sortableItems.sort((a, b) => {
+        // Special case for sorting by key
+        if (sortConfig.key === 'key') {
+          if (a.key < b.key) return sortConfig.direction === 'ascending' ? -1 : 1;
+          if (a.key > b.key) return sortConfig.direction === 'ascending' ? 1 : -1;
+          return 0;
+        }
+        
+        // Sorting by status
+        if (sortConfig.key === 'status') {
+          if (a.status < b.status) return sortConfig.direction === 'ascending' ? -1 : 1;
+          if (a.status > b.status) return sortConfig.direction === 'ascending' ? 1 : -1;
+          return 0;
+        }
+        
+        // Sorting by breaks
+        if (sortConfig.key === 'breaks') {
+          const aBreaks = a.breaks || 0;
+          const bBreaks = b.breaks || 0;
+          return sortConfig.direction === 'ascending' 
+            ? aBreaks - bBreaks 
+            : bBreaks - aBreaks;
+        }
+        
+        return 0;
+      });
+    }
+    
+    return sortableItems;
+  }, [filteredResults, sortConfig]);
+
   // Status labels and colors for display
   const statusConfig = {
     'matching': { label: 'Matching', color: 'bg-matching/10 text-matching border-matching/20 hover:bg-matching/20' },
     'different': { label: 'Different', color: 'bg-removed/10 text-removed border-removed/20 hover:bg-removed/20' },
-    'missing-a': { label: 'Missing in A', color: 'bg-accent/80 text-accent-foreground border-accent' },
-    'missing-b': { label: 'Missing in B', color: 'bg-accent/80 text-accent-foreground border-accent' },
+    'missing-a': { label: 'Missing in Principal', color: 'bg-accent/80 text-accent-foreground border-accent' },
+    'missing-b': { label: 'Missing in Counterparty', color: 'bg-accent/80 text-accent-foreground border-accent' },
+  };
+
+  // Request sort
+  const requestSort = (key: string) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Get sort direction icon
+  const getSortDirectionIcon = (key: string) => {
+    if (sortConfig.key !== key) return null;
+    return sortConfig.direction === 'ascending' 
+      ? <ChevronDown className="h-4 w-4 text-muted-foreground" />
+      : <ChevronDown className="h-4 w-4 text-muted-foreground rotate-180" />;
   };
 
   // Toggle a specific status filter
@@ -104,12 +172,13 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
       'missing-b': true,
     });
     setShowOnlyDifferences(false);
+    setSortConfig({ key: null, direction: 'ascending' });
   };
 
   // Export results to CSV
   const exportToCsv = () => {
     // Create headers
-    let headers = ['Key', 'Status'];
+    let headers = ['Key', 'Status', 'Breaks'];
     
     if (results.length > 0) {
       const fieldNames = results[0].fields.map(f => f.name);
@@ -117,8 +186,8 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
     }
     
     // Create rows
-    const rows = filteredResults.map(result => {
-      let row = [result.key, statusConfig[result.status].label];
+    const rows = sortedResults.map(result => {
+      let row = [result.key, statusConfig[result.status].label, String(result.breaks || 0)];
       
       result.fields.forEach(field => {
         row.push(String(field.valueA ?? ''));
@@ -307,8 +376,33 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[180px]">Key</TableHead>
-                  <TableHead className="w-[120px]">Status</TableHead>
+                  <TableHead 
+                    className="w-[180px] cursor-pointer hover:bg-muted/50"
+                    onClick={() => requestSort('key')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Key</span>
+                      {getSortDirectionIcon('key')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="w-[140px] cursor-pointer hover:bg-muted/50"
+                    onClick={() => requestSort('status')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Status</span>
+                      {getSortDirectionIcon('status')}
+                    </div>
+                  </TableHead>
+                  <TableHead 
+                    className="w-[80px] cursor-pointer hover:bg-muted/50"
+                    onClick={() => requestSort('breaks')}
+                  >
+                    <div className="flex items-center space-x-1">
+                      <span>Breaks</span>
+                      {getSortDirectionIcon('breaks')}
+                    </div>
+                  </TableHead>
                   {results.length > 0 && results[0].fields.map((field, i) => (
                     <React.Fragment key={`header-${i}`}>
                       {(!showOnlyDifferences || results.some(r => !r.fields[i]?.matching)) && (
@@ -329,15 +423,15 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, index) => (
                     <TableRow key={`skeleton-${index}`}>
-                      <TableCell colSpan={results.length > 0 ? results[0].fields.length + 3 : 4}>
+                      <TableCell colSpan={results.length > 0 ? results[0].fields.length + 4 : 5}>
                         <div className="h-10 bg-muted/30 rounded animate-pulse"></div>
                       </TableCell>
                     </TableRow>
                   ))
-                ) : filteredResults.length === 0 ? (
+                ) : sortedResults.length === 0 ? (
                   <TableRow>
                     <TableCell 
-                      colSpan={results.length > 0 ? results[0].fields.length + 3 : 4} 
+                      colSpan={results.length > 0 ? results[0].fields.length + 4 : 5} 
                       className="h-32 text-center"
                     >
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
@@ -357,7 +451,7 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredResults.map((result, rowIndex) => (
+                  sortedResults.map((result, rowIndex) => (
                     <TableRow 
                       key={`row-${result.key}-${rowIndex}`}
                       className={cn(
@@ -379,6 +473,17 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                           {statusConfig[result.status].label}
                         </Badge>
                       </TableCell>
+                      <TableCell>
+                        {result.breaks ? (
+                          <Badge variant="outline" className="font-medium">
+                            {result.breaks}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-matching/10 text-matching border-matching/20">
+                            0
+                          </Badge>
+                        )}
+                      </TableCell>
                       
                       {result.fields.map((field, i) => (
                         <React.Fragment key={`field-${i}`}>
@@ -388,19 +493,34 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                                 <div className={cn(
                                   "min-w-20 max-w-40 truncate",
                                   (result.status === 'missing-b' || field.valueA === null) ? "text-muted-foreground italic" : "",
-                                  !field.matching && field.valueA !== null && field.valueB !== null ? "text-removed" : ""
+                                  !field.matching && field.valueA !== null && field.valueB !== null ? "text-removed font-medium" : ""
                                 )}
                                 title={formatCellValue(field.valueA)}>
                                   {formatCellValue(field.valueA)}
                                 </div>
                                 
                                 <div className={cn(
-                                  "min-w-20 max-w-40 truncate",
+                                  "min-w-20 max-w-40 truncate flex items-center gap-1",
                                   (result.status === 'missing-a' || field.valueB === null) ? "text-muted-foreground italic" : "",
-                                  !field.matching && field.valueA !== null && field.valueB !== null ? "text-removed" : ""
+                                  !field.matching && field.valueA !== null && field.valueB !== null ? "text-removed font-medium" : ""
                                 )}
                                 title={formatCellValue(field.valueB)}>
                                   {formatCellValue(field.valueB)}
+                                  
+                                  {!field.matching && field.breakReason && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span>
+                                            <AlertCircle className="h-3.5 w-3.5 text-removed ml-1 cursor-help" />
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="top">
+                                          <p className="text-xs">{field.breakReason}</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
                                 </div>
                               </div>
                             </TableCell>
@@ -434,7 +554,7 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
       </AnimatedTransition>
       
       <div className="text-xs text-muted-foreground text-center mt-2">
-        Showing {filteredResults.length} of {results.length} records
+        Showing {sortedResults.length} of {results.length} records
       </div>
     </div>
   );

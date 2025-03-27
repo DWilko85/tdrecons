@@ -32,7 +32,8 @@ import {
   Database, 
   Plus, 
   Trash2, 
-  Upload 
+  Upload,
+  RefreshCw
 } from "lucide-react";
 import { 
   DataSource, 
@@ -50,6 +51,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Switch
+} from "@/components/ui/switch";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -61,7 +65,7 @@ interface DataSourceConfigProps {
   onRemoveMapping: (index: number) => void;
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
-  onFileUpload: (data: any[], fileName: string) => DataSource | undefined;
+  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | undefined;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
@@ -77,6 +81,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onFileUpload,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
+  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(true);
 
   // Check if configuration is valid to enable reconciliation
   const canReconcile = 
@@ -88,17 +93,16 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
 
   // Handle file upload and set as source
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
-    const newSource = onFileUpload(data, fileName);
-    if (newSource) {
-      onSetSourceA(newSource);
-    }
+    onFileUpload(data, fileName, 'sourceA', autoReconcileOnUpload);
   };
 
   const handleFileUploadForSourceB = (data: any[], fileName: string) => {
-    const newSource = onFileUpload(data, fileName);
-    if (newSource) {
-      onSetSourceB(newSource);
-    }
+    onFileUpload(data, fileName, 'sourceB', autoReconcileOnUpload);
+  };
+
+  // Handle general file upload (auto-assign to A or B)
+  const handleFileUpload = (data: any[], fileName: string) => {
+    onFileUpload(data, fileName, 'auto', autoReconcileOnUpload);
   };
 
   // Handle source A selection
@@ -160,6 +164,42 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   return (
     <div className="space-y-6">
       <AnimatedTransition type="slide-up" delay={0.1}>
+        {/* Quick Start Upload */}
+        <Card className="border border-border/50 shadow-sm mb-6">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl">Quick Start</CardTitle>
+            <CardDescription>
+              Upload your data files to begin reconciliation
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pb-4">
+            <FileUpload 
+              onFileLoaded={handleFileUpload} 
+              maxSizeMB={10}
+            />
+            <div className="flex items-center justify-between mt-4">
+              <div className="flex items-center space-x-2">
+                <Switch 
+                  id="auto-reconcile"
+                  checked={autoReconcileOnUpload}
+                  onCheckedChange={setAutoReconcileOnUpload}
+                />
+                <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>
+              </div>
+              
+              {canReconcile && (
+                <Button 
+                  className="gap-2" 
+                  onClick={handleReconcile}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Run Reconciliation
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Source A Configuration */}
           <Card className="border border-border/50 shadow-sm">
@@ -198,7 +238,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                     <AccordionTrigger className="text-sm font-medium">
                       <div className="flex items-center gap-2">
                         <Upload className="h-4 w-4" />
-                        Upload new data file
+                        Upload Principal file
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>
@@ -276,7 +316,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                     <AccordionTrigger className="text-sm font-medium">
                       <div className="flex items-center gap-2">
                         <Upload className="h-4 w-4" />
-                        Upload new data file
+                        Upload Counterparty file
                       </div>
                     </AccordionTrigger>
                     <AccordionContent>

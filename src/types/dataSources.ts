@@ -26,11 +26,17 @@ export interface DataSourceConfig {
 
 export interface ReconciliationResult {
   key: string;
+  sourceAData?: Record<string, any> | null;
+  sourceBData?: Record<string, any> | null;
   fields: {
     name: string;
     valueA: any;
     valueB: any;
     matching: boolean;
+    breakReason?: string | null;
+    fieldA?: string;
+    fieldB?: string;
   }[];
   status: 'matching' | 'different' | 'missing-a' | 'missing-b';
+  breaks?: number;
 }

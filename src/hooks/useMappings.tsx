@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { FieldMapping, DataSource, DataSourceConfig } from '@/types/dataSources';
 import { generateDefaultMappings, getDisplayName } from '@/utils/mappingUtils';
@@ -9,14 +9,14 @@ export function useMappings(
   setConfig: React.Dispatch<React.SetStateAction<DataSourceConfig>>
 ) {
   // Update field mappings
-  const updateMapping = (index: number, mapping: FieldMapping) => {
+  const updateMapping = useCallback((index: number, mapping: FieldMapping) => {
     const newMappings = [...config.mappings];
     newMappings[index] = mapping;
     setConfig({ ...config, mappings: newMappings });
-  };
+  }, [config, setConfig]);
 
   // Add a new field mapping
-  const addMapping = () => {
+  const addMapping = useCallback(() => {
     if (!config.sourceA || !config.sourceB) return;
     
     // Find fields that aren't already mapped
@@ -41,27 +41,34 @@ export function useMappings(
       ...config,
       mappings: [...config.mappings, newMapping],
     });
-  };
+  }, [config, setConfig]);
 
   // Remove a field mapping
-  const removeMapping = (index: number) => {
+  const removeMapping = useCallback((index: number) => {
     const newMappings = [...config.mappings];
     newMappings.splice(index, 1);
     setConfig({ ...config, mappings: newMappings });
-  };
+  }, [config, setConfig]);
 
   // Update key mapping
-  const updateKeyMapping = (sourceAField: string, sourceBField: string) => {
+  const updateKeyMapping = useCallback((sourceAField: string, sourceBField: string) => {
     setConfig({
       ...config,
       keyMapping: { sourceAField, sourceBField },
     });
-  };
+  }, [config, setConfig]);
+
+  // Generate mappings between two sources
+  const generateMappings = useCallback((sourceA: DataSource, sourceB: DataSource) => {
+    if (!sourceA || !sourceB) return [];
+    return generateDefaultMappings(sourceA, sourceB);
+  }, []);
 
   return {
     updateMapping,
     addMapping,
     removeMapping,
     updateKeyMapping,
+    generateMappings,
   };
 }

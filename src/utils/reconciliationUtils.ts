@@ -48,13 +48,19 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
       const fields = mappings.map(mapping => {
         const valueA = itemA[mapping.sourceFieldA];
         const valueB = itemB[mapping.sourceFieldB];
-        const isMatching = valueA === valueB;
+        const isMatching = compareValues(valueA, valueB);
+        
+        // Enhanced break information
+        const breakReason = isMatching ? null : getBreakReason(valueA, valueB);
         
         return {
           name: mapping.displayName,
           valueA,
           valueB,
           matching: isMatching,
+          breakReason,
+          fieldA: mapping.sourceFieldA,
+          fieldB: mapping.sourceFieldB
         };
       });
       
@@ -63,8 +69,11 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
       
       results.push({
         key: keyA,
+        sourceAData: itemA,
+        sourceBData: itemB,
         fields,
         status: hasAnyDifference ? 'different' : 'matching',
+        breaks: fields.filter(f => !f.matching).length
       });
       
       // Remove from map to track processed items
@@ -76,12 +85,18 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
         valueA: itemA[mapping.sourceFieldA],
         valueB: null,
         matching: false,
+        breakReason: 'Missing in counterparty data',
+        fieldA: mapping.sourceFieldA,
+        fieldB: mapping.sourceFieldB
       }));
       
       results.push({
         key: keyA,
+        sourceAData: itemA,
+        sourceBData: null,
         fields,
         status: 'missing-b',
+        breaks: fields.length
       });
     }
   });
@@ -93,12 +108,18 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
       valueA: null,
       valueB: itemB[mapping.sourceFieldB],
       matching: false,
+      breakReason: 'Missing in principal data',
+      fieldA: mapping.sourceFieldA,
+      fieldB: mapping.sourceFieldB
     }));
     
     results.push({
       key: keyB,
+      sourceAData: null,
+      sourceBData: itemB,
       fields,
       status: 'missing-a',
+      breaks: fields.length
     });
   });
   
@@ -110,4 +131,38 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
   });
   
   return results;
+};
+
+// Compare values with improved type handling
+const compareValues = (valueA: any, valueB: any): boolean => {
+  // Handle null/undefined cases
+  if (valueA === null || valueA === undefined || valueB === null || valueB === undefined) {
+    return valueA === valueB;
+  }
+  
+  // Convert to strings for comparison (handles numbers, booleans, etc.)
+  const strA = String(valueA).trim();
+  const strB = String(valueB).trim();
+  
+  // Case insensitive comparison for strings
+  return strA.toLowerCase() === strB.toLowerCase();
+};
+
+// Get detailed break reason
+const getBreakReason = (valueA: any, valueB: any): string => {
+  if (valueA === null || valueA === undefined) {
+    return 'Principal value is empty';
+  }
+  
+  if (valueB === null || valueB === undefined) {
+    return 'Counterparty value is empty';
+  }
+  
+  // Both have values but they don't match
+  if (typeof valueA === 'number' && typeof valueB === 'number') {
+    const diff = valueA - valueB;
+    return `Value mismatch (difference: ${diff})`;
+  }
+  
+  return 'Value mismatch';
 };

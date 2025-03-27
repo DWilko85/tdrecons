@@ -36,14 +36,18 @@ export function useDataSources() {
     reconciliationResults, 
     isReconciling, 
     reconcile: performReconcile,
-    setReconciliationResults
+    autoReconcile,
+    clearResults,
+    setReconciliationResults,
+    lastConfig
   } = useReconciliation();
   
   const {
     updateMapping,
     addMapping,
     removeMapping,
-    updateKeyMapping
+    updateKeyMapping,
+    generateMappings
   } = useMappings(config, setConfig);
   
   const {
@@ -61,7 +65,7 @@ export function useDataSources() {
       setConfig({
         sourceA,
         sourceB,
-        mappings: generateDefaultMappings(sourceA, sourceB),
+        mappings: generateMappings(sourceA, sourceB),
         keyMapping: {
           sourceAField: sourceA.keyField,
           sourceBField: sourceB.keyField,
@@ -78,18 +82,52 @@ export function useDataSources() {
       mappings: config.mappings.length
     });
     
-    // Clear previous results first to ensure we get a fresh reconciliation
-    setReconciliationResults([]);
-    
     // Perform the reconciliation with the current config
     return performReconcile(config);
-  }, [config, performReconcile, setReconciliationResults]);
+  }, [config, performReconcile]);
+
+  // Add a file source and optionally set it as source A or B and auto-reconcile
+  const addFileSourceAndReconcile = useCallback(async (
+    data: Record<string, any>[], 
+    fileName: string,
+    setAs?: 'sourceA' | 'sourceB' | 'auto',
+    autoRunReconciliation: boolean = true
+  ) => {
+    const newSource = addUploadedFileSource(data, fileName);
+    
+    if (!newSource) return null;
+    
+    // Determine where to set the new source based on the setAs parameter
+    if (setAs === 'sourceA' || (setAs === 'auto' && !config.sourceA)) {
+      setSourceA(newSource);
+    } 
+    else if (setAs === 'sourceB' || (setAs === 'auto' && !config.sourceB && config.sourceA)) {
+      setSourceB(newSource);
+    }
+    
+    // If both sources are now set, auto-reconcile if requested
+    const updatedConfig = {
+      ...config,
+      sourceA: setAs === 'sourceA' ? newSource : config.sourceA,
+      sourceB: setAs === 'sourceB' ? newSource : config.sourceB
+    };
+    
+    if (autoRunReconciliation && updatedConfig.sourceA && updatedConfig.sourceB) {
+      // We need to wait a bit for the state to update before reconciling
+      setTimeout(() => {
+        autoReconcile(updatedConfig);
+      }, 100);
+    }
+    
+    return newSource;
+  }, [addUploadedFileSource, setSourceA, setSourceB, config, autoReconcile]);
 
   return {
     availableSources,
     config,
     reconciliationResults,
     isReconciling,
+    lastConfig,
     setSourceA,
     setSourceB,
     updateMapping,
@@ -97,7 +135,11 @@ export function useDataSources() {
     removeMapping,
     updateKeyMapping,
     reconcile,
+    clearResults,
+    autoReconcile,
     addUploadedFileSource,
+    addFileSourceAndReconcile,
+    generateMappings
   };
 }
 

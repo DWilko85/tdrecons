@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useCallback } from 'react';
 import { DataSource, DataSourceConfig } from '@/types/dataSources';
 import { generateDefaultMappings } from '@/utils/mappingUtils';
 import { createUploadedFileSource } from '@/utils/fileUploadUtils';
@@ -11,7 +11,7 @@ export function useSourceManagement(
   setAvailableSources: React.Dispatch<React.SetStateAction<DataSource[]>>
 ) {
   // Set data source A
-  const setSourceA = (source: DataSource | null) => {
+  const setSourceA = useCallback((source: DataSource | null) => {
     if (source) {
       const newConfig = {
         ...config,
@@ -35,10 +35,10 @@ export function useSourceManagement(
         mappings: [],
       });
     }
-  };
+  }, [config, setConfig]);
 
   // Set data source B
-  const setSourceB = (source: DataSource | null) => {
+  const setSourceB = useCallback((source: DataSource | null) => {
     if (source) {
       const newConfig = {
         ...config,
@@ -62,10 +62,10 @@ export function useSourceManagement(
         mappings: [],
       });
     }
-  };
+  }, [config, setConfig]);
 
   // Add a new uploaded file as a data source
-  const addUploadedFileSource = (data: Record<string, any>[], fileName: string) => {
+  const addUploadedFileSource = useCallback((data: Record<string, any>[], fileName: string) => {
     const newSource = createUploadedFileSource(data, fileName);
     
     if (newSource) {
@@ -76,7 +76,7 @@ export function useSourceManagement(
     }
     
     return undefined;
-  };
+  }, [setAvailableSources]);
 
   return {
     setSourceA,

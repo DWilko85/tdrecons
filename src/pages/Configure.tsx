@@ -19,7 +19,7 @@ const Configure = () => {
     updateKeyMapping,
     reconcile,
     reconciliationResults,
-    addUploadedFileSource,
+    addFileSourceAndReconcile,
   } = useDataSources();
 
   // Check if reconciliation has been run and navigate if needed
@@ -32,10 +32,24 @@ const Configure = () => {
   // Handle the reconciliation button click
   const handleReconcile = () => {
     // Trigger reconciliation
-    const success = reconcile();
+    reconcile();
     
-    // Navigate to the results page with a flag to indicate we should run reconciliation
-    navigate("/reconcile", { state: { runReconciliation: true } });
+    // Navigate to the results page
+    navigate("/reconcile");
+  };
+
+  // Handle file upload with potential automatic reconciliation
+  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
+    const newSource = addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
+    
+    if (newSource && autoReconcile && config.sourceA && config.sourceB) {
+      // If auto-reconcile is enabled and we have both sources, navigate to results
+      setTimeout(() => {
+        navigate("/reconcile");
+      }, 300);
+    }
+    
+    return newSource;
   };
 
   return (
@@ -69,7 +83,7 @@ const Configure = () => {
             onRemoveMapping={removeMapping}
             onUpdateKeyMapping={updateKeyMapping}
             onReconcile={handleReconcile}
-            onFileUpload={addUploadedFileSource}
+            onFileUpload={handleUploadFile}
           />
         </div>
       </section>

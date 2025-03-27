@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
 import { performReconciliation } from '@/utils/reconciliationUtils';
@@ -7,6 +7,7 @@ import { performReconciliation } from '@/utils/reconciliationUtils';
 export function useReconciliation() {
   const [reconciliationResults, setReconciliationResults] = useState<ReconciliationResult[]>([]);
   const [isReconciling, setIsReconciling] = useState(false);
+  const [lastConfig, setLastConfig] = useState<DataSourceConfig | null>(null);
 
   // Perform the reconciliation between the two sources
   const reconcile = useCallback(async (config: DataSourceConfig) => {
@@ -18,6 +19,7 @@ export function useReconciliation() {
     try {
       // Start reconciliation process
       setIsReconciling(true);
+      setLastConfig(config);
       console.log("Starting reconciliation process with sources:", config.sourceA.name, "and", config.sourceB.name);
       
       // Get results
@@ -44,10 +46,29 @@ export function useReconciliation() {
     }
   }, []);
 
+  // Function to clear results
+  const clearResults = useCallback(() => {
+    setReconciliationResults([]);
+    setLastConfig(null);
+  }, []);
+
+  // Auto-reconcile when config changes if we have a previous config
+  const autoReconcile = useCallback((config: DataSourceConfig) => {
+    if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
+      return false;
+    }
+
+    reconcile(config);
+    return true;
+  }, [reconcile]);
+
   return {
     reconciliationResults,
     isReconciling,
     reconcile,
+    clearResults,
+    autoReconcile,
+    lastConfig,
     setReconciliationResults,
   };
 }
