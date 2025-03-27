@@ -3,7 +3,8 @@ import { useCallback } from 'react';
 import { DataSource, DataSourceConfig } from '@/types/dataSources';
 import { generateDefaultMappings } from '@/utils/mappingUtils';
 import { createUploadedFileSource } from '@/utils/fileUploadUtils';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
+import { DataSourceRecord } from '@/types/dataSourcesDb';
 import { toast } from 'sonner';
 
 export function useSourceManagement(
@@ -72,14 +73,15 @@ export function useSourceManagement(
     
     if (newSource) {
       try {
-        // Save data source to database
-        const { error } = await supabase.from('data_sources').insert({
+        // Save data source to database using any type assertion to bypass TypeScript limitations
+        // until the types are regenerated
+        const { error } = await supabase.from('data_sources' as any).insert({
           name: newSource.name,
           type: newSource.type,
           data: JSON.stringify(newSource.data),
           fields: newSource.fields,
           key_field: newSource.keyField
-        });
+        } as any);
         
         if (error) {
           console.error("Error saving data source to database:", error);
@@ -104,10 +106,11 @@ export function useSourceManagement(
   // Load data sources from database
   const loadDataSources = useCallback(async () => {
     try {
+      // Query data_sources table using any type assertion until types are regenerated
       const { data, error } = await supabase
-        .from('data_sources')
+        .from('data_sources' as any)
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
       
       if (error) {
         console.error("Error loading data sources:", error);
@@ -119,10 +122,10 @@ export function useSourceManagement(
         console.log("Loaded data sources from database:", data.length);
         
         // Convert database format to DataSource format
-        const loadedSources: DataSource[] = data.map(item => ({
+        const loadedSources: DataSource[] = data.map((item: DataSourceRecord) => ({
           id: item.id,
           name: item.name,
-          type: item.type,
+          type: item.type as 'csv' | 'json' | 'api' | 'uploaded',
           data: typeof item.data === 'string' ? JSON.parse(item.data) : item.data,
           fields: item.fields,
           keyField: item.key_field

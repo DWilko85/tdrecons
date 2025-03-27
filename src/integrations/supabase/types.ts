@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      data_sources: {
+        Row: {
+          created_at: string
+          data: Json
+          fields: string[]
+          id: string
+          key_field: string
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          fields: string[]
+          id?: string
+          key_field: string
+          name: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          fields?: string[]
+          id?: string
+          key_field?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -89,6 +119,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_data_sources_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       get_current_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -99,6 +133,10 @@ export type Database = {
           updated_at: string | null
           username: string | null
         }
+      }
+      initialize_data_sources_table: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
     }
     Enums: {

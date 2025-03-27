@@ -39,7 +39,7 @@ const Configure = () => {
     try {
       // Check if we can query the data_sources table
       const { error } = await supabase
-        .from('data_sources')
+        .from('data_sources' as any)
         .select('count')
         .limit(1);
       
@@ -78,7 +78,7 @@ const Configure = () => {
   const handleUploadFile = async (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
-    // This function now properly returns a Promise<DataSource | null>
+    // Make sure this returns a Promise<DataSource> to match the expected type
     const newSource = await addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
     
     if (newSource && autoReconcile && config.sourceA && config.sourceB) {

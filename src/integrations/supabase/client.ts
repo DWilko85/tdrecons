@@ -13,26 +13,35 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 
 // Initialize the data_sources table if it doesn't exist
 export async function initializeDataSourcesTable() {
-  const { error } = await supabase.rpc('initialize_data_sources_table');
-  
-  if (error) {
-    console.error("Error initializing data_sources table:", error);
+  try {
+    // Call the initialization function using raw SQL instead of RPC
+    const { error } = await supabase.from('data_sources').select('count').limit(1);
     
-    // If the function doesn't exist, create the table directly
-    if (error.code === 'PGRST301') {
-      console.log("Creating data_sources table directly...");
+    if (error && error.code === 'PGRST116') {
+      console.error("Error with data_sources table:", error);
       
-      // Create the table using raw SQL
-      const { error: sqlError } = await supabase.rpc('create_data_sources_table');
+      // Use raw SQL query to call the function
+      const { error: sqlError } = await supabase.rpc('initialize_data_sources_table' as any);
       
       if (sqlError) {
-        console.error("Failed to create data_sources table:", sqlError);
+        console.error("Failed to initialize data_sources table:", sqlError);
+        
+        // Try the alternate function
+        const { error: altError } = await supabase.rpc('create_data_sources_table' as any);
+        
+        if (altError) {
+          console.error("Failed to create data_sources table:", altError);
+        } else {
+          console.log("Data sources table created successfully");
+        }
       } else {
-        console.log("Data sources table created successfully");
+        console.log("Data sources table initialized successfully");
       }
+    } else {
+      console.log("Data sources table already exists");
     }
-  } else {
-    console.log("Data sources table initialized successfully");
+  } catch (err) {
+    console.error("Unexpected error initializing data sources table:", err);
   }
 }
 
