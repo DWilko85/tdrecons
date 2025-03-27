@@ -8,13 +8,6 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -44,7 +37,6 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import AnimatedTransition from "./AnimatedTransition";
 import { Badge } from "@/components/ui/badge";
-import FileUpload from "./FileUpload";
 import {
   Accordion,
   AccordionContent,
@@ -54,6 +46,7 @@ import {
 import {
   Switch
 } from "@/components/ui/switch";
+import FileUpload from "./FileUpload";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -100,48 +93,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onFileUpload(data, fileName, 'sourceB', autoReconcileOnUpload);
   };
 
-  // Handle general file upload (auto-assign to A or B)
-  const handleFileUpload = (data: any[], fileName: string) => {
-    onFileUpload(data, fileName, 'auto', autoReconcileOnUpload);
-  };
-
-  // Handle source A selection
-  const handleSourceAChange = (value: string) => {
-    const source = availableSources.find(s => s.id === value) || null;
-    onSetSourceA(source);
-  };
-
-  // Handle source B selection
-  const handleSourceBChange = (value: string) => {
-    const source = availableSources.find(s => s.id === value) || null;
-    onSetSourceB(source);
-  };
-
-  // Handle key field selection for source A
-  const handleKeyAChange = (value: string) => {
-    onUpdateKeyMapping(value, keyMapping.sourceBField);
-  };
-
-  // Handle key field selection for source B
-  const handleKeyBChange = (value: string) => {
-    onUpdateKeyMapping(keyMapping.sourceAField, value);
-  };
-
-  // Handle field mapping update
-  const handleMappingChange = (index: number, field: string, value: string) => {
-    const mapping = { ...mappings[index] };
-    
-    if (field === 'sourceFieldA') {
-      mapping.sourceFieldA = value;
-    } else if (field === 'sourceFieldB') {
-      mapping.sourceFieldB = value;
-    } else if (field === 'displayName') {
-      mapping.displayName = value;
-    }
-    
-    onUpdateMapping(index, mapping);
-  };
-
   // Handle adding a new mapping
   const handleAddMapping = () => {
     if (!sourceA || !sourceB) {
@@ -164,44 +115,8 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   return (
     <div className="space-y-6">
       <AnimatedTransition type="slide-up" delay={0.1}>
-        {/* Quick Start Upload */}
-        <Card className="border border-border/50 shadow-sm mb-6">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Quick Start</CardTitle>
-            <CardDescription>
-              Upload your data files to begin reconciliation
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="pb-4">
-            <FileUpload 
-              onFileLoaded={handleFileUpload} 
-              maxSizeMB={10}
-            />
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id="auto-reconcile"
-                  checked={autoReconcileOnUpload}
-                  onCheckedChange={setAutoReconcileOnUpload}
-                />
-                <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>
-              </div>
-              
-              {canReconcile && (
-                <Button 
-                  className="gap-2" 
-                  onClick={handleReconcile}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Run Reconciliation
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Source A Configuration */}
+          {/* Principal Data */}
           <Card className="border border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <Badge className="w-fit mb-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
@@ -214,25 +129,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             </CardHeader>
             <CardContent className="pb-4">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sourceA">Data Source</Label>
-                  <Select 
-                    value={sourceA?.id || ""} 
-                    onValueChange={handleSourceAChange}
-                  >
-                    <SelectTrigger id="sourceA" className="w-full">
-                      <SelectValue placeholder="Select a data source" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      {availableSources.map((source) => (
-                        <SelectItem key={source.id} value={source.id}>
-                          {source.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="upload">
                     <AccordionTrigger className="text-sm font-medium">
@@ -250,21 +146,9 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                 {sourceA && (
                   <div className="space-y-2 animate-fade-in">
                     <Label htmlFor="keyFieldA">Unique Identifier (Key Field)</Label>
-                    <Select 
-                      value={keyMapping.sourceAField} 
-                      onValueChange={handleKeyAChange}
-                    >
-                      <SelectTrigger id="keyFieldA">
-                        <SelectValue placeholder="Select key field" />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        {sourceA.fields.map((field) => (
-                          <SelectItem key={field} value={field}>
-                            {field}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="p-2 border rounded-md bg-background/50">
+                      {keyMapping.sourceAField || "No key field selected"}
+                    </div>
                   </div>
                 )}
               </div>
@@ -279,7 +163,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             )}
           </Card>
 
-          {/* Source B Configuration */}
+          {/* Counterparty Data */}
           <Card className="border border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <Badge className="w-fit mb-2 bg-secondary text-secondary-foreground border-secondary/50 hover:bg-secondary/80">
@@ -292,25 +176,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             </CardHeader>
             <CardContent className="pb-4">
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sourceB">Data Source</Label>
-                  <Select 
-                    value={sourceB?.id || ""} 
-                    onValueChange={handleSourceBChange}
-                  >
-                    <SelectTrigger id="sourceB" className="w-full">
-                      <SelectValue placeholder="Select a data source" />
-                    </SelectTrigger>
-                    <SelectContent position="popper">
-                      {availableSources.map((source) => (
-                        <SelectItem key={source.id} value={source.id}>
-                          {source.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="upload">
                     <AccordionTrigger className="text-sm font-medium">
@@ -328,21 +193,9 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                 {sourceB && (
                   <div className="space-y-2 animate-fade-in">
                     <Label htmlFor="keyFieldB">Unique Identifier (Key Field)</Label>
-                    <Select 
-                      value={keyMapping.sourceBField} 
-                      onValueChange={handleKeyBChange}
-                    >
-                      <SelectTrigger id="keyFieldB">
-                        <SelectValue placeholder="Select key field" />
-                      </SelectTrigger>
-                      <SelectContent position="popper">
-                        {sourceB.fields.map((field) => (
-                          <SelectItem key={field} value={field}>
-                            {field}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="p-2 border rounded-md bg-background/50">
+                      {keyMapping.sourceBField || "No key field selected"}
+                    </div>
                   </div>
                 )}
               </div>
@@ -398,47 +251,23 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                       {mappings.map((mapping, index) => (
                         <TableRow key={index} className="group">
                           <TableCell className="py-2">
-                            <Select
-                              value={mapping.sourceFieldA}
-                              onValueChange={(value) => handleMappingChange(index, "sourceFieldA", value)}
-                            >
-                              <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Select field" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {sourceA.fields.map((field) => (
-                                  <SelectItem key={field} value={field}>
-                                    {field}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="p-2 border rounded-md bg-background/50">
+                              {mapping.sourceFieldA}
+                            </div>
                           </TableCell>
                           <TableCell className="px-0 text-center">
                             <ArrowLeftRight className="w-4 h-4 text-muted-foreground mx-auto" />
                           </TableCell>
                           <TableCell className="py-2">
-                            <Select
-                              value={mapping.sourceFieldB}
-                              onValueChange={(value) => handleMappingChange(index, "sourceFieldB", value)}
-                            >
-                              <SelectTrigger className="h-8">
-                                <SelectValue placeholder="Select field" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {sourceB.fields.map((field) => (
-                                  <SelectItem key={field} value={field}>
-                                    {field}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <div className="p-2 border rounded-md bg-background/50">
+                              {mapping.sourceFieldB}
+                            </div>
                           </TableCell>
                           <TableCell className="py-2">
                             <Input
                               className="h-8"
                               value={mapping.displayName}
-                              onChange={(e) => handleMappingChange(index, "displayName", e.target.value)}
+                              onChange={(e) => onUpdateMapping(index, {...mapping, displayName: e.target.value})}
                             />
                           </TableCell>
                           <TableCell className="p-2">
@@ -469,15 +298,26 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
               )}
             </CardContent>
             <CardFooter className="border-t">
-              <Button 
-                className="w-full gap-2" 
-                size="lg"
-                onClick={handleReconcile}
-                disabled={!canReconcile}
-              >
-                <Database className="w-4 h-4" />
-                Start Reconciliation
-              </Button>
+              <div className="w-full flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id="auto-reconcile"
+                    checked={autoReconcileOnUpload}
+                    onCheckedChange={setAutoReconcileOnUpload}
+                  />
+                  <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>
+                </div>
+                
+                <Button 
+                  className="gap-2" 
+                  size="lg"
+                  onClick={handleReconcile}
+                  disabled={!canReconcile}
+                >
+                  <Database className="w-4 h-4" />
+                  Start Reconciliation
+                </Button>
+              </div>
             </CardFooter>
           </Card>
         </AnimatedTransition>
