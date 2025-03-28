@@ -50,7 +50,7 @@ export const performReconciliation = (config: DataSourceConfig): ReconciliationR
   console.log(`Created sourceBMap with ${sourceBMap.size} entries`);
   
   // Process all items from source A
-  sourceA.data.forEach(itemA => {
+  sourceA.data.forEach((itemA, indexA) => {
     const keyA = itemA[keyMapping.sourceAField];
     
     if (keyA === undefined || keyA === null) {
