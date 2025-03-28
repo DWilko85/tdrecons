@@ -75,7 +75,7 @@ const Configure = () => {
   };
 
   // Handle file upload with potential automatic reconciliation
-  // This is now a wrapper function that returns a DataSource directly to match the expected type
+  // This returns a DataSource object to match the expected type
   const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
@@ -100,7 +100,7 @@ const Configure = () => {
     return {
       id: `temp-${Date.now()}`,
       name: fileName,
-      type: 'uploaded',
+      type: 'uploaded' as 'uploaded' | 'csv' | 'json' | 'api',
       data: data,
       fields: Object.keys(data[0] || {}),
       keyField: Object.keys(data[0] || {})[0] || 'id'

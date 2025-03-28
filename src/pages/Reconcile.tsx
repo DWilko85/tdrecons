@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
 import ReconciliationStats from "@/components/ReconciliationStats";
 import SourceInfo from "@/components/SourceInfo";
+import PerfectMatchBanner from "@/components/PerfectMatchBanner";
 
 const Reconcile = () => {
   const navigate = useNavigate();
@@ -71,25 +72,20 @@ const Reconcile = () => {
     });
   }, [reconciliationResults, isReconciling, showLoadingState, config]);
 
-  // If reconciling, don't show loading state
+  // If reconciling, show loading state immediately
   useEffect(() => {
     if (isReconciling) {
+      setShowLoadingState(true);
+    } else if (reconciliationResults.length > 0) {
+      // If we have results, don't show loading state
       setShowLoadingState(false);
-    }
-  }, [isReconciling]);
-
-  // If no results and not currently reconciling, show loading state after a delay
-  useEffect(() => {
-    if (reconciliationResults.length === 0 && !isReconciling) {
+    } else {
       // Show loading state after a small delay to prevent flashing
       const timeout = setTimeout(() => {
         setShowLoadingState(true);
       }, 500);
       
       return () => clearTimeout(timeout);
-    } else {
-      // If we have results or are reconciling, don't show loading state
-      setShowLoadingState(false);
     }
   }, [reconciliationResults, isReconciling]);
 
@@ -102,10 +98,17 @@ const Reconcile = () => {
     missingB: reconciliationResults.filter(r => r.status === 'missing-b').length,
   };
 
+  // Check if we have a perfect match (all records match)
+  const isPerfectMatch = reconciliationResults.length > 0 && 
+    stats.matching === stats.total && 
+    stats.different === 0 && 
+    stats.missingA === 0 && 
+    stats.missingB === 0;
+
   // Trigger reconciliation
   const handleReconcile = () => {
     // Reset loading state and run reconciliation
-    setShowLoadingState(false);
+    setShowLoadingState(true);
     reconcile();
   };
 
@@ -224,7 +227,17 @@ const Reconcile = () => {
           </div>
           
           {reconciliationResults.length > 0 && (
-            <ReconciliationStats results={reconciliationResults} />
+            <>
+              {isPerfectMatch && config.sourceA && config.sourceB && (
+                <PerfectMatchBanner 
+                  sourceA={config.sourceA.name}
+                  sourceB={config.sourceB.name}
+                  recordCount={stats.total}
+                />
+              )}
+              
+              <ReconciliationStats results={reconciliationResults} />
+            </>
           )}
           
           {config.sourceA && config.sourceB && (
@@ -238,9 +251,14 @@ const Reconcile = () => {
         <div className="container max-w-6xl">
           {isReconciling ? (
             <div className="text-center py-20">
-              <RefreshCw className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
-              <h2 className="text-xl font-medium mb-2">AI Reconcile Processing</h2>
-              <p className="text-muted-foreground mb-6">Please wait while we reconcile your data sources...</p>
+              <RefreshCw className="h-16 w-16 text-primary/60 mx-auto mb-6 animate-spin" />
+              <h2 className="text-2xl font-medium mb-4">Reconciliation in Progress</h2>
+              <p className="text-muted-foreground mb-2 max-w-md mx-auto">
+                We're comparing your data sources to identify matches and differences...
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This may take a moment depending on the size of your data sources
+              </p>
             </div>
           ) : showLoadingState && reconciliationResults.length === 0 ? (
             <div className="text-center py-20">

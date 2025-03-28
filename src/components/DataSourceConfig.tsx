@@ -26,7 +26,8 @@ import {
   Plus, 
   Trash2, 
   Upload,
-  RefreshCw
+  RefreshCw,
+  CheckCircle2
 } from "lucide-react";
 import { 
   DataSource, 
@@ -297,26 +298,31 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                 </div>
               )}
             </CardContent>
-            <CardFooter className="border-t">
-              <div className="w-full flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Switch 
-                    id="auto-reconcile"
-                    checked={autoReconcileOnUpload}
-                    onCheckedChange={setAutoReconcileOnUpload}
-                  />
-                  <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>
+            <CardFooter className="border-t pt-4">
+              <div className="w-full flex flex-col space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch 
+                      id="auto-reconcile"
+                      checked={autoReconcileOnUpload}
+                      onCheckedChange={setAutoReconcileOnUpload}
+                    />
+                    <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>
+                  </div>
                 </div>
                 
-                <Button 
-                  className="gap-2" 
-                  size="lg"
-                  onClick={handleReconcile}
-                  disabled={!canReconcile}
-                >
-                  <Database className="w-4 h-4" />
-                  Start Reconciliation
-                </Button>
+                {canReconcile && (
+                  <div className="flex justify-center w-full">
+                    <Button 
+                      className="gap-2 px-8 py-6 text-lg" 
+                      size="lg"
+                      onClick={handleReconcile}
+                    >
+                      <Database className="w-5 h-5" />
+                      Start Reconciliation
+                    </Button>
+                  </div>
+                )}
               </div>
             </CardFooter>
           </Card>
