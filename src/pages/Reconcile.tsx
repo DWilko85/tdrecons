@@ -36,6 +36,19 @@ const Reconcile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
+  // Debug logs to help diagnose the issue
+  useEffect(() => {
+    console.log("Reconcile page state:", { 
+      resultsLength: reconciliationResults?.length || 0,
+      isReconciling,
+      config: {
+        sourceA: config?.sourceA?.name || 'none',
+        sourceB: config?.sourceB?.name || 'none',
+        mappings: config?.mappings?.length || 0
+      }
+    });
+  }, [reconciliationResults, isReconciling, config]);
+
   // Check if we're coming from Configure page with intention to reconcile
   useEffect(() => {
     const shouldRunReconciliation = location.state?.runReconciliation === true;
@@ -43,24 +56,12 @@ const Reconcile = () => {
     // Only auto-run reconciliation if explicitly requested through navigation state
     if (!initialLoadDone && shouldRunReconciliation) {
       console.log("Running reconciliation due to explicit navigation request");
-      handleReconcile();
+      if (config.sourceA && config.sourceB && config.mappings.length > 0) {
+        handleReconcile();
+      }
     }
     setInitialLoadDone(true);
   }, [location.state, initialLoadDone]);
-
-  // For debugging
-  useEffect(() => {
-    console.log("Render state:", { 
-      resultsLength: reconciliationResults.length, 
-      isReconciling, 
-      showLoadingState,
-      config: {
-        sourceA: config.sourceA?.name,
-        sourceB: config.sourceB?.name,
-        mappings: config.mappings.length
-      }
-    });
-  }, [reconciliationResults, isReconciling, showLoadingState, config]);
 
   // Show loading state when reconciling or no results
   useEffect(() => {
@@ -107,7 +108,7 @@ const Reconcile = () => {
     // Reset loading state and run reconciliation
     setShowLoadingState(true);
     console.log("Manually triggering reconciliation");
-    reconcile();
+    reconcile(config);
   };
 
   // Save reconciliation to database
@@ -294,7 +295,7 @@ const Reconcile = () => {
             </div>
           )}
           
-          {shouldShowResults && (
+          {reconciliationResults && reconciliationResults.length > 0 && (
             <ReconciliationTable 
               results={reconciliationResults}
               isLoading={isReconciling}

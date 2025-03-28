@@ -26,7 +26,7 @@ export function useReconciliation() {
         config.sourceB.name, `(${config.sourceB.data.length} records)`
       );
       
-      // Get results
+      // Get results - this is a synchronous operation in the current implementation
       const results = performReconciliation(config);
       console.log("Reconciliation completed with", results.length, "records");
       
@@ -43,7 +43,6 @@ export function useReconciliation() {
     } catch (error) {
       console.error("Reconciliation error:", error);
       toast.error("Failed to reconcile data sources");
-      setReconciliationResults([]);
       return Promise.resolve(false);
     } finally {
       setIsReconciling(false);
