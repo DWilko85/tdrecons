@@ -76,7 +76,7 @@ const Configure = () => {
 
   // Handle file upload with potential automatic reconciliation
   // This returns a DataSource object to match the expected type
-  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
+  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = false) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
     // Call the async function without waiting for it

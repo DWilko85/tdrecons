@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -40,23 +39,15 @@ const Reconcile = () => {
   useEffect(() => {
     const shouldRunReconciliation = location.state?.runReconciliation === true;
     
-    // Auto-run reconciliation if we have a config but no results yet
-    if (!initialLoadDone) {
-      if (shouldRunReconciliation) {
-        console.log("Auto-triggering reconciliation due to navigation from configure page");
-        handleReconcile();
-        setInitialLoadDone(true);
-      } else if (config.sourceA && config.sourceB && config.mappings.length > 0 && reconciliationResults.length === 0) {
-        console.log("Auto-triggering reconciliation with existing config");
-        autoReconcile(config);
-        setInitialLoadDone(true);
-      } else if (lastConfig && reconciliationResults.length === 0) {
-        console.log("Auto-triggering reconciliation with last config");
-        autoReconcile(lastConfig);
-        setInitialLoadDone(true);
-      }
+    // Only auto-run reconciliation if explicitly requested through navigation state
+    if (!initialLoadDone && shouldRunReconciliation) {
+      console.log("Running reconciliation due to explicit navigation request");
+      handleReconcile();
+      setInitialLoadDone(true);
+    } else {
+      setInitialLoadDone(true);
     }
-  }, [location.state, initialLoadDone, config, reconciliationResults, autoReconcile, lastConfig]);
+  }, [location.state, initialLoadDone]);
 
   // For debugging
   useEffect(() => {

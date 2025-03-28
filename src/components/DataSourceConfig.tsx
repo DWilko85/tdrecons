@@ -75,7 +75,8 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onFileUpload,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
-  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(true);
+  // Set autoReconcileOnUpload to false by default to prevent automatic reconciliation
+  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(false);
 
   // Check if configuration is valid to enable reconciliation
   const canReconcile = 
