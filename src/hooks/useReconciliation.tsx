@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
 import { performReconciliation } from '@/utils/reconciliationUtils';

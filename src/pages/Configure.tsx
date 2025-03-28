@@ -67,6 +67,11 @@ const Configure = () => {
       mappings: config.mappings.length
     });
     
+    if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
+      toast.error("Please configure both data sources and field mappings");
+      return;
+    }
+    
     // Trigger reconciliation
     reconcile();
     
@@ -75,7 +80,6 @@ const Configure = () => {
   };
 
   // Handle file upload with potential automatic reconciliation
-  // This returns a DataSource object to match the expected type
   const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = false) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
@@ -96,7 +100,6 @@ const Configure = () => {
       });
     
     // Create a temporary DataSource to return immediately
-    // This is necessary to satisfy the type requirement
     return {
       id: `temp-${Date.now()}`,
       name: fileName,

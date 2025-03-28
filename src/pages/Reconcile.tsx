@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -43,10 +44,8 @@ const Reconcile = () => {
     if (!initialLoadDone && shouldRunReconciliation) {
       console.log("Running reconciliation due to explicit navigation request");
       handleReconcile();
-      setInitialLoadDone(true);
-    } else {
-      setInitialLoadDone(true);
     }
+    setInitialLoadDone(true);
   }, [location.state, initialLoadDone]);
 
   // For debugging
@@ -63,7 +62,7 @@ const Reconcile = () => {
     });
   }, [reconciliationResults, isReconciling, showLoadingState, config]);
 
-  // If reconciling, show loading state immediately
+  // Show loading state when reconciling or no results
   useEffect(() => {
     if (isReconciling) {
       setShowLoadingState(true);
@@ -98,8 +97,16 @@ const Reconcile = () => {
 
   // Trigger reconciliation
   const handleReconcile = () => {
+    // Make sure we have valid config
+    if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
+      toast.error("Please configure both data sources and field mappings");
+      navigate("/configure");
+      return;
+    }
+    
     // Reset loading state and run reconciliation
     setShowLoadingState(true);
+    console.log("Manually triggering reconciliation");
     reconcile();
   };
 
@@ -154,6 +161,12 @@ const Reconcile = () => {
     }
   };
 
+  // Determine what to show based on the state
+  const shouldShowNoConfigMessage = !config.sourceA || !config.sourceB || config.mappings.length === 0;
+  const shouldShowNoResultsMessage = !isReconciling && reconciliationResults.length === 0 && !shouldShowNoConfigMessage;
+  const shouldShowResults = reconciliationResults.length > 0;
+  const shouldShowLoading = isReconciling;
+
   return (
     <div className="min-h-screen pb-16">
       <Navbar />
@@ -194,7 +207,7 @@ const Reconcile = () => {
                 <Button 
                   className="gap-2" 
                   onClick={handleReconcile}
-                  disabled={isReconciling}
+                  disabled={isReconciling || shouldShowNoConfigMessage}
                 >
                   <RefreshCw className={isReconciling ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
                   {isReconciling ? "Processing..." : "Re-run Reconciliation"}
@@ -217,7 +230,7 @@ const Reconcile = () => {
             </Button>
           </div>
           
-          {reconciliationResults.length > 0 && (
+          {shouldShowResults && (
             <>
               {isPerfectMatch && config.sourceA && config.sourceB && (
                 <PerfectMatchBanner 
@@ -240,7 +253,7 @@ const Reconcile = () => {
       {/* Results Table */}
       <section>
         <div className="container max-w-6xl">
-          {isReconciling ? (
+          {shouldShowLoading && (
             <div className="text-center py-20">
               <RefreshCw className="h-16 w-16 text-primary/60 mx-auto mb-6 animate-spin" />
               <h2 className="text-2xl font-medium mb-4">Reconciliation in Progress</h2>
@@ -251,7 +264,23 @@ const Reconcile = () => {
                 This may take a moment depending on the size of your data sources
               </p>
             </div>
-          ) : showLoadingState && reconciliationResults.length === 0 ? (
+          )}
+          
+          {shouldShowNoConfigMessage && !isReconciling && (
+            <div className="text-center py-20">
+              <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-xl font-medium mb-2">Configuration Required</h2>
+              <p className="text-muted-foreground mb-6">Please configure both data sources and field mappings</p>
+              <Button
+                className="mx-auto"
+                onClick={() => navigate("/configure")}
+              >
+                Configure Sources
+              </Button>
+            </div>
+          )}
+          
+          {shouldShowNoResultsMessage && (
             <div className="text-center py-20">
               <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-xl font-medium mb-2">No Results Available</h2>
@@ -263,23 +292,13 @@ const Reconcile = () => {
                 Start Reconciliation
               </Button>
             </div>
-          ) : reconciliationResults.length > 0 ? (
+          )}
+          
+          {shouldShowResults && (
             <ReconciliationTable 
               results={reconciliationResults}
               isLoading={isReconciling}
             />
-          ) : (
-            <div className="text-center py-20">
-              <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">No Results Available</h2>
-              <p className="text-muted-foreground mb-6">Configure your data sources to start the AI reconciliation process</p>
-              <Button
-                className="mx-auto"
-                onClick={() => navigate("/configure")}
-              >
-                Configure Sources
-              </Button>
-            </div>
           )}
         </div>
       </section>
