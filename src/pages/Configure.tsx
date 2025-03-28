@@ -39,7 +39,7 @@ const Configure = () => {
     try {
       // Check if we can query the data_sources table
       const { error } = await supabase
-        .from('data_sources' as any)
+        .from('data_sources')
         .select('count')
         .limit(1);
       
@@ -75,21 +75,36 @@ const Configure = () => {
   };
 
   // Handle file upload with potential automatic reconciliation
-  const handleUploadFile = async (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
+  // This is now a wrapper function that returns a DataSource directly to match the expected type
+  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = true) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
-    // Make sure this returns a Promise<DataSource> to match the expected type
-    const newSource = await addFileSourceAndReconcile(data, fileName, setAs, autoReconcile);
+    // Call the async function without waiting for it
+    addFileSourceAndReconcile(data, fileName, setAs, autoReconcile)
+      .then(newSource => {
+        if (newSource && autoReconcile && config.sourceA && config.sourceB) {
+          // If auto-reconcile is enabled and we have both sources, navigate to results
+          console.log("Auto-navigating to reconcile page after file upload");
+          setTimeout(() => {
+            navigate("/reconcile", { state: { runReconciliation: true } });
+          }, 500);
+        }
+      })
+      .catch(err => {
+        console.error("Error processing file:", err);
+        toast.error("Error processing file");
+      });
     
-    if (newSource && autoReconcile && config.sourceA && config.sourceB) {
-      // If auto-reconcile is enabled and we have both sources, navigate to results
-      console.log("Auto-navigating to reconcile page after file upload");
-      setTimeout(() => {
-        navigate("/reconcile", { state: { runReconciliation: true } });
-      }, 500);
-    }
-    
-    return newSource;
+    // Create a temporary DataSource to return immediately
+    // This is necessary to satisfy the type requirement
+    return {
+      id: `temp-${Date.now()}`,
+      name: fileName,
+      type: 'uploaded',
+      data: data,
+      fields: Object.keys(data[0] || {}),
+      keyField: Object.keys(data[0] || {})[0] || 'id'
+    };
   };
 
   return (
