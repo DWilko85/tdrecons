@@ -16,7 +16,7 @@ const PerfectMatchBanner: React.FC<PerfectMatchBannerProps> = ({
   recordCount
 }) => {
   return (
-    <AnimatedTransition type="scale-in" delay={0.2}>
+    <AnimatedTransition type="scale" delay={0.2}>
       <Card className="border-2 border-green-500 bg-green-50 dark:bg-green-950/20 shadow-sm mb-8">
         <CardContent className="flex items-center justify-center space-x-4 py-10 text-center">
           <CheckCircle2 className="h-10 w-10 text-green-500" />
