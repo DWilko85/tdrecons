@@ -117,6 +117,54 @@ export type Database = {
         }
         Relationships: []
       }
+      reconciliation_history: {
+        Row: {
+          created_at: string
+          description: string | null
+          different_records: number
+          id: string
+          matching_records: number
+          missing_a_records: number
+          missing_b_records: number
+          name: string
+          results: Json
+          source_a_name: string
+          source_b_name: string
+          total_records: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          different_records: number
+          id?: string
+          matching_records: number
+          missing_a_records: number
+          missing_b_records: number
+          name: string
+          results: Json
+          source_a_name: string
+          source_b_name: string
+          total_records: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          different_records?: number
+          id?: string
+          matching_records?: number
+          missing_a_records?: number
+          missing_b_records?: number
+          name?: string
+          results?: Json
+          source_a_name?: string
+          source_b_name?: string
+          total_records?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

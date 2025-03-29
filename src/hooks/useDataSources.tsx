@@ -35,7 +35,7 @@ export function useDataSources() {
     reconciliationResults, 
     isReconciling, 
     reconcile: performReconcile,
-    autoReconcile,
+    autoReconcile: performAutoReconcile,
     clearResults,
     setReconciliationResults,
     lastConfig
@@ -74,6 +74,11 @@ export function useDataSources() {
     // Perform the reconciliation with the current config
     return performReconcile(config);
   }, [config, performReconcile]);
+
+  // Wrapper around the autoReconcile function that uses the current config
+  const autoReconcile = useCallback((updatedConfig: DataSourceConfig) => {
+    return performAutoReconcile(updatedConfig);
+  }, [performAutoReconcile]);
 
   // Add a file source and optionally set it as source A or B and auto-reconcile
   const addFileSourceAndReconcile = useCallback(async (

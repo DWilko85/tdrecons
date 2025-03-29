@@ -108,7 +108,7 @@ const Reconcile = () => {
     // Reset loading state and run reconciliation
     setShowLoadingState(true);
     console.log("Manually triggering reconciliation");
-    reconcile();  // Fix: Changed from reconcile(config) to reconcile() as it uses the current config
+    reconcile();  // Fixed: Changed from reconcile(config) to reconcile() as it uses the current config
   };
 
   // Save reconciliation to database

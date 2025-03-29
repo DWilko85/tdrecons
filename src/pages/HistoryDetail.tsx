@@ -41,7 +41,8 @@ const HistoryDetail = () => {
             results: Array.isArray(data.results) ? data.results : JSON.parse(JSON.stringify(data.results))
           };
           
-          setReconciliation(parsedData as ReconciliationHistory);
+          // Cast the data to ReconciliationHistory since we've confirmed the table now exists
+          setReconciliation(parsedData as unknown as ReconciliationHistory);
         }
       } catch (error) {
         console.error("Error fetching reconciliation:", error);

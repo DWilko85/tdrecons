@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -33,7 +32,8 @@ const History = () => {
           results: Array.isArray(item.results) ? item.results : JSON.parse(JSON.stringify(item.results))
         }));
         
-        setHistory(parsedData as ReconciliationHistory[]);
+        // Cast the data to ReconciliationHistory[] since we've confirmed the table now exists
+        setHistory(parsedData as unknown as ReconciliationHistory[]);
       }
     } catch (error) {
       console.error("Error fetching history:", error);
