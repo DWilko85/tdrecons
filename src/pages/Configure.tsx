@@ -18,6 +18,7 @@ const Configure = () => {
     updateMapping,
     addMapping,
     removeMapping,
+    swapMappingFields,
     updateKeyMapping,
     reconcile,
     reconciliationResults,
@@ -139,6 +140,7 @@ const Configure = () => {
             onUpdateMapping={updateMapping}
             onAddMapping={addMapping}
             onRemoveMapping={removeMapping}
+            onSwapMappingFields={swapMappingFields}
             onUpdateKeyMapping={updateKeyMapping}
             onReconcile={handleReconcile}
             onFileUpload={handleUploadFile}

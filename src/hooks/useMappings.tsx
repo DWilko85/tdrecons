@@ -50,6 +50,23 @@ export function useMappings(
     setConfig({ ...config, mappings: newMappings });
   }, [config, setConfig]);
 
+  // Swap fields between sourceA and sourceB for a mapping
+  const swapMappingFields = useCallback((index: number) => {
+    const mapping = config.mappings[index];
+    const newMapping: FieldMapping = {
+      sourceFieldA: mapping.sourceFieldB,
+      sourceFieldB: mapping.sourceFieldA,
+      // Update display name based on the swapped fields
+      displayName: getDisplayName(mapping.sourceFieldB, mapping.sourceFieldA),
+    };
+    
+    const newMappings = [...config.mappings];
+    newMappings[index] = newMapping;
+    setConfig({ ...config, mappings: newMappings });
+    
+    toast.success("Fields swapped successfully");
+  }, [config, setConfig]);
+
   // Update key mapping
   const updateKeyMapping = useCallback((sourceAField: string, sourceBField: string) => {
     setConfig({
@@ -64,11 +81,23 @@ export function useMappings(
     return generateDefaultMappings(sourceA, sourceB);
   }, []);
 
+  // Get available fields for source A and B
+  const getAvailableFields = useCallback(() => {
+    if (!config.sourceA || !config.sourceB) return { fieldsA: [], fieldsB: [] };
+    
+    return {
+      fieldsA: config.sourceA.fields,
+      fieldsB: config.sourceB.fields
+    };
+  }, [config.sourceA, config.sourceB]);
+
   return {
     updateMapping,
     addMapping,
     removeMapping,
+    swapMappingFields,
     updateKeyMapping,
     generateMappings,
+    getAvailableFields,
   };
 }

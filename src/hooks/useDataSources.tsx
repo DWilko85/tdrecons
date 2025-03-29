@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { 
   DataSource, 
@@ -45,8 +46,10 @@ export function useDataSources() {
     updateMapping,
     addMapping,
     removeMapping,
+    swapMappingFields,
     updateKeyMapping,
-    generateMappings
+    generateMappings,
+    getAvailableFields
   } = useMappings(config, setConfig);
   
   const {
@@ -163,6 +166,7 @@ export function useDataSources() {
     updateMapping,
     addMapping,
     removeMapping,
+    swapMappingFields,
     updateKeyMapping,
     reconcile,
     clearResults,
@@ -170,6 +174,7 @@ export function useDataSources() {
     addUploadedFileSource,
     addFileSourceAndReconcile,
     generateMappings,
-    loadDataSources
+    loadDataSources,
+    getAvailableFields
   };
 }

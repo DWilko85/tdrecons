@@ -19,6 +19,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   AlertCircle, 
   ArrowLeftRight, 
@@ -27,7 +34,8 @@ import {
   Trash2, 
   Upload,
   RefreshCw,
-  CheckCircle2
+  CheckCircle2,
+  SwapHorizontal
 } from "lucide-react";
 import { 
   DataSource, 
@@ -59,6 +67,7 @@ interface DataSourceConfigProps {
   onUpdateMapping: (index: number, mapping: FieldMapping) => void;
   onAddMapping: () => void;
   onRemoveMapping: (index: number) => void;
+  onSwapMappingFields: (index: number) => void;
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
   onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | null | undefined;
@@ -72,6 +81,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onUpdateMapping,
   onAddMapping,
   onRemoveMapping,
+  onSwapMappingFields,
   onUpdateKeyMapping,
   onReconcile,
   onFileUpload,
@@ -136,10 +146,10 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
         file_a_id: sourceA.id,
         file_b_id: sourceB.id,
         user_id: userId,
-        mapping: JSON.parse(JSON.stringify({
+        mapping: JSON.stringify({
           fields: mappings,
           keyMapping: keyMapping
-        })) as Json
+        }) as unknown as Json
       };
       
       // Save to the field_mappings table
@@ -174,6 +184,47 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     } else {
       toast.error("Please complete the configuration before reconciling");
     }
+  };
+
+  // Get all available fields for source A and B
+  const getSourceFields = (source: DataSource | null) => {
+    if (!source) return [];
+    return source.fields;
+  };
+
+  // Handle field change in mapping
+  const handleFieldChange = (index: number, field: string, isSourceA: boolean) => {
+    const mapping = mappings[index];
+    const updatedMapping = isSourceA 
+      ? { ...mapping, sourceFieldA: field }
+      : { ...mapping, sourceFieldB: field };
+
+    // Update display name if both fields are selected
+    if (updatedMapping.sourceFieldA && updatedMapping.sourceFieldB) {
+      updatedMapping.displayName = getDisplayName(updatedMapping.sourceFieldA, updatedMapping.sourceFieldB);
+    }
+
+    onUpdateMapping(index, updatedMapping);
+  };
+
+  // Function to get a good display name based on field names
+  const getDisplayName = (fieldA: string, fieldB: string): string => {
+    // If fields are identical, just use one
+    if (fieldA.toLowerCase() === fieldB.toLowerCase()) {
+      return toTitleCase(fieldA);
+    }
+    
+    // Return the shorter one or combine them
+    return toTitleCase(fieldA.length <= fieldB.length ? fieldA : fieldB);
+  };
+
+  // Helper function to convert to title case
+  const toTitleCase = (str: string): string => {
+    return str
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .replace(/_([a-z])/g, (_, char) => ' ' + char.toUpperCase())
+      .trim();
   };
 
   return (
@@ -308,24 +359,56 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                         <TableHead className="w-8 px-0 text-center"></TableHead>
                         <TableHead className="w-[32%]">Counterparty Field</TableHead>
                         <TableHead>Display Name</TableHead>
-                        <TableHead className="w-12"></TableHead>
+                        <TableHead className="w-24"></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {mappings.map((mapping, index) => (
                         <TableRow key={index} className="group">
                           <TableCell className="py-2">
-                            <div className="p-2 border rounded-md bg-background/50">
-                              {mapping.sourceFieldA}
-                            </div>
+                            <Select 
+                              value={mapping.sourceFieldA}
+                              onValueChange={(value) => handleFieldChange(index, value, true)}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getSourceFields(sourceA).map((field) => (
+                                  <SelectItem key={field} value={field}>
+                                    {field}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell className="px-0 text-center">
-                            <ArrowLeftRight className="w-4 h-4 text-muted-foreground mx-auto" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-full hover:bg-muted"
+                              onClick={() => onSwapMappingFields(index)}
+                              title="Swap fields"
+                            >
+                              <SwapHorizontal className="w-4 h-4" />
+                            </Button>
                           </TableCell>
                           <TableCell className="py-2">
-                            <div className="p-2 border rounded-md bg-background/50">
-                              {mapping.sourceFieldB}
-                            </div>
+                            <Select 
+                              value={mapping.sourceFieldB}
+                              onValueChange={(value) => handleFieldChange(index, value, false)}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select field" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {getSourceFields(sourceB).map((field) => (
+                                  <SelectItem key={field} value={field}>
+                                    {field}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                           <TableCell className="py-2">
                             <Input
@@ -334,7 +417,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                               onChange={(e) => onUpdateMapping(index, {...mapping, displayName: e.target.value})}
                             />
                           </TableCell>
-                          <TableCell className="p-2">
+                          <TableCell className="p-2 text-right">
                             <Button
                               variant="ghost"
                               size="icon"
