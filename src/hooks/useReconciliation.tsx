@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
 import { performReconciliation } from '@/utils/reconciliationUtils';
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 export function useReconciliation() {
   const [reconciliationResults, setReconciliationResults] = useState<ReconciliationResult[]>([]);
@@ -77,6 +78,9 @@ export function useReconciliation() {
       // Generate a name based on the sources
       const reconciliationName = `${config.sourceA.name} to ${config.sourceB.name} reconciliation`;
       
+      // Convert results to a JSON-compatible format using JSON.stringify and parse
+      const jsonResults = JSON.parse(JSON.stringify(results)) as Json;
+      
       // Save to reconciliation_history table
       const { error } = await supabase
         .from('reconciliation_history')
@@ -90,7 +94,7 @@ export function useReconciliation() {
           different_records: stats.different,
           missing_a_records: stats.missingA,
           missing_b_records: stats.missingB,
-          results: results,
+          results: jsonResults,
           user_id: userId
         });
       

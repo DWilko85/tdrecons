@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/switch";
 import FileUpload from "./FileUpload";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -129,16 +130,16 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       // Create a mapping name based on the source names
       const mappingName = `${sourceA.name} to ${sourceB.name} mapping`;
       
-      // Prepare the mapping data
+      // Prepare the mapping data - Convert to JSON compatible format
       const mappingData = {
         name: mappingName,
         file_a_id: sourceA.id,
         file_b_id: sourceB.id,
         user_id: userId,
-        mapping: {
+        mapping: JSON.parse(JSON.stringify({
           fields: mappings,
           keyMapping: keyMapping
-        }
+        })) as Json
       };
       
       // Save to the field_mappings table
