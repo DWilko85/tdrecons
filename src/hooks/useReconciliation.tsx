@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
 import { performReconciliation } from '@/utils/reconciliationUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export function useReconciliation() {
   const [reconciliationResults, setReconciliationResults] = useState<ReconciliationResult[]>([]);
@@ -10,7 +11,7 @@ export function useReconciliation() {
   const [lastConfig, setLastConfig] = useState<DataSourceConfig | null>(null);
 
   // Perform the reconciliation between the two sources
-  const reconcile = useCallback((config: DataSourceConfig) => {
+  const reconcile = useCallback(async (config: DataSourceConfig) => {
     if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
       toast.error("Please configure both data sources and field mappings");
       return Promise.resolve(false);
@@ -34,6 +35,12 @@ export function useReconciliation() {
       setReconciliationResults(results);
       
       if (results.length > 0) {
+        // Save results to database if user is authenticated
+        const { data: sessionData } = await supabase.auth.getSession();
+        if (sessionData.session?.user.id) {
+          await saveResultsToDatabase(results, config, sessionData.session.user.id);
+        }
+        
         toast.success(`Reconciliation complete: ${results.length} records processed`);
         return Promise.resolve(true);
       } else {
@@ -48,6 +55,54 @@ export function useReconciliation() {
       setIsReconciling(false);
     }
   }, []);
+
+  // Save reconciliation results to database
+  const saveResultsToDatabase = async (
+    results: ReconciliationResult[], 
+    config: DataSourceConfig,
+    userId: string
+  ) => {
+    try {
+      if (!config.sourceA || !config.sourceB) return;
+      
+      // Calculate stats
+      const stats = {
+        total: results.length,
+        matching: results.filter(r => r.status === 'matching').length,
+        different: results.filter(r => r.status === 'different').length,
+        missingA: results.filter(r => r.status === 'missing-a').length,
+        missingB: results.filter(r => r.status === 'missing-b').length,
+      };
+      
+      // Generate a name based on the sources
+      const reconciliationName = `${config.sourceA.name} to ${config.sourceB.name} reconciliation`;
+      
+      // Save to reconciliation_history table
+      const { error } = await supabase
+        .from('reconciliation_history')
+        .insert({
+          name: reconciliationName,
+          description: `Reconciliation of ${config.sourceA.name} (${stats.total} records) against ${config.sourceB.name}`,
+          source_a_name: config.sourceA.name,
+          source_b_name: config.sourceB.name,
+          total_records: stats.total,
+          matching_records: stats.matching,
+          different_records: stats.different,
+          missing_a_records: stats.missingA,
+          missing_b_records: stats.missingB,
+          results: results,
+          user_id: userId
+        });
+      
+      if (error) {
+        console.error("Error saving reconciliation results:", error);
+      } else {
+        console.log("Reconciliation results saved to database");
+      }
+    } catch (err) {
+      console.error("Error in saveResultsToDatabase:", err);
+    }
+  };
 
   // Function to clear results
   const clearResults = useCallback(() => {

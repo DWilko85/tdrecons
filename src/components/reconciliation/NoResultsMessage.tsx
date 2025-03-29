@@ -1,13 +1,14 @@
 
 import React from "react";
-import { Database } from "lucide-react";
+import { Database, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NoResultsMessageProps {
   onReconcile: () => void;
+  isLoading?: boolean;
 }
 
-const NoResultsMessage: React.FC<NoResultsMessageProps> = ({ onReconcile }) => {
+const NoResultsMessage: React.FC<NoResultsMessageProps> = ({ onReconcile, isLoading = false }) => {
   return (
     <div className="text-center py-20">
       <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
@@ -16,8 +17,16 @@ const NoResultsMessage: React.FC<NoResultsMessageProps> = ({ onReconcile }) => {
       <Button
         className="mx-auto"
         onClick={onReconcile}
+        disabled={isLoading}
       >
-        Start Reconciliation
+        {isLoading ? (
+          <>
+            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>Start Reconciliation</>
+        )}
       </Button>
     </div>
   );

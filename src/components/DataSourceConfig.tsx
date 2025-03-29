@@ -48,6 +48,7 @@ import {
   Switch
 } from "@/components/ui/switch";
 import FileUpload from "./FileUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -77,6 +78,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   const { sourceA, sourceB, mappings, keyMapping } = config;
   // Set autoReconcileOnUpload to false by default to prevent automatic reconciliation
   const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(false);
+  const [isSavingMappings, setIsSavingMappings] = React.useState(false);
 
   // Check if configuration is valid to enable reconciliation
   const canReconcile = 
@@ -105,9 +107,68 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onAddMapping();
   };
 
+  // Save field mappings to database before reconciliation
+  const saveMappingsToDatabase = async () => {
+    if (!sourceA || !sourceB || mappings.length === 0) {
+      return false;
+    }
+
+    try {
+      setIsSavingMappings(true);
+      
+      // Get the current user session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      
+      if (!userId) {
+        console.log("No user ID available for saving mappings");
+        // Continue without saving mappings if user is not logged in
+        return true;
+      }
+      
+      // Create a mapping name based on the source names
+      const mappingName = `${sourceA.name} to ${sourceB.name} mapping`;
+      
+      // Prepare the mapping data
+      const mappingData = {
+        name: mappingName,
+        file_a_id: sourceA.id,
+        file_b_id: sourceB.id,
+        user_id: userId,
+        mapping: {
+          fields: mappings,
+          keyMapping: keyMapping
+        }
+      };
+      
+      // Save to the field_mappings table
+      const { error } = await supabase
+        .from('field_mappings')
+        .insert(mappingData);
+      
+      if (error) {
+        console.error("Error saving mappings:", error);
+        // Continue with reconciliation even if mapping save fails
+        return true;
+      }
+      
+      console.log("Field mappings saved successfully");
+      return true;
+    } catch (err) {
+      console.error("Error in saveMappingsToDatabase:", err);
+      return true; // Continue with reconciliation even if there's an error
+    } finally {
+      setIsSavingMappings(false);
+    }
+  };
+
   // Start reconciliation
-  const handleReconcile = () => {
+  const handleReconcile = async () => {
     if (canReconcile) {
+      // First save mappings to database
+      await saveMappingsToDatabase();
+      
+      // Then trigger reconciliation
       onReconcile();
     } else {
       toast.error("Please complete the configuration before reconciling");
@@ -318,8 +379,13 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                       className="gap-2 px-8 py-6 text-lg" 
                       size="lg"
                       onClick={handleReconcile}
+                      disabled={isSavingMappings}
                     >
-                      <Database className="w-5 h-5" />
+                      {isSavingMappings ? (
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Database className="w-5 h-5" />
+                      )}
                       Start Reconciliation
                     </Button>
                   </div>
