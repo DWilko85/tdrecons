@@ -1,17 +1,9 @@
 
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import ReconciliationTable from "@/components/ReconciliationTable";
 import { useDataSources } from "@/hooks/useDataSources";
-import { Button } from "@/components/ui/button";
-import { 
-  ArrowLeft, 
-  Database, 
-  History, 
-  RefreshCw, 
-  Save, 
-} from "lucide-react";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -19,6 +11,10 @@ import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
 import ReconciliationStats from "@/components/ReconciliationStats";
 import SourceInfo from "@/components/SourceInfo";
 import PerfectMatchBanner from "@/components/PerfectMatchBanner";
+import ReconcileHeader from "@/components/reconciliation/ReconcileHeader";
+import LoadingState from "@/components/reconciliation/LoadingState";
+import NoConfigMessage from "@/components/reconciliation/NoConfigMessage";
+import NoResultsMessage from "@/components/reconciliation/NoResultsMessage";
 
 const Reconcile = () => {
   const navigate = useNavigate();
@@ -27,9 +23,7 @@ const Reconcile = () => {
     config, 
     reconciliationResults,
     isReconciling,
-    reconcile,
-    autoReconcile,
-    lastConfig
+    reconcile
   } = useDataSources();
   const [showLoadingState, setShowLoadingState] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
@@ -175,61 +169,12 @@ const Reconcile = () => {
       {/* Header */}
       <section className="pt-28 pb-8">
         <div className="container max-w-6xl">
-          <AnimatedTransition type="slide-down" delay={0.1}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 gap-1 text-muted-foreground hover:text-foreground"
-                    asChild
-                  >
-                    <Link to="/configure">
-                      <ArrowLeft className="h-3.5 w-3.5" />
-                      <span>Back to Configuration</span>
-                    </Link>
-                  </Button>
-                </div>
-                <h1 className="text-3xl font-bold">AI Reconcile: Results</h1>
-              </div>
-              
-              <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
-                <Button 
-                  variant="outline"
-                  className="gap-2" 
-                  onClick={() => setSaveDialogOpen(true)}
-                  disabled={isReconciling || reconciliationResults.length === 0}
-                >
-                  <Save className="h-4 w-4" />
-                  <span>Save Results</span>
-                </Button>
-                
-                <Button 
-                  className="gap-2" 
-                  onClick={handleReconcile}
-                  disabled={isReconciling || shouldShowNoConfigMessage}
-                >
-                  <RefreshCw className={isReconciling ? "h-4 w-4 animate-spin" : "h-4 w-4"} />
-                  {isReconciling ? "Processing..." : "Re-run Reconciliation"}
-                </Button>
-              </div>
-            </div>
-          </AnimatedTransition>
-          
-          <div className="flex items-center gap-3 mb-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 text-muted-foreground hover:text-foreground"
-              asChild
-            >
-              <Link to="/history">
-                <History className="h-3.5 w-3.5" />
-                <span>View History</span>
-              </Link>
-            </Button>
-          </div>
+          <ReconcileHeader
+            isReconciling={isReconciling}
+            hasResults={reconciliationResults.length > 0}
+            onSave={() => setSaveDialogOpen(true)}
+            onReconcile={handleReconcile}
+          />
           
           {shouldShowResults && (
             <>
@@ -254,45 +199,12 @@ const Reconcile = () => {
       {/* Results Table */}
       <section>
         <div className="container max-w-6xl">
-          {shouldShowLoading && (
-            <div className="text-center py-20">
-              <RefreshCw className="h-16 w-16 text-primary/60 mx-auto mb-6 animate-spin" />
-              <h2 className="text-2xl font-medium mb-4">Reconciliation in Progress</h2>
-              <p className="text-muted-foreground mb-2 max-w-md mx-auto">
-                We're comparing your data sources to identify matches and differences...
-              </p>
-              <p className="text-sm text-muted-foreground">
-                This may take a moment depending on the size of your data sources
-              </p>
-            </div>
-          )}
+          {shouldShowLoading && <LoadingState />}
           
-          {shouldShowNoConfigMessage && !isReconciling && (
-            <div className="text-center py-20">
-              <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">Configuration Required</h2>
-              <p className="text-muted-foreground mb-6">Please configure both data sources and field mappings</p>
-              <Button
-                className="mx-auto"
-                onClick={() => navigate("/configure")}
-              >
-                Configure Sources
-              </Button>
-            </div>
-          )}
+          {shouldShowNoConfigMessage && !isReconciling && <NoConfigMessage />}
           
           {shouldShowNoResultsMessage && (
-            <div className="text-center py-20">
-              <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">No Results Available</h2>
-              <p className="text-muted-foreground mb-6">Run the reconciliation process to generate results</p>
-              <Button
-                className="mx-auto"
-                onClick={handleReconcile}
-              >
-                Start Reconciliation
-              </Button>
-            </div>
+            <NoResultsMessage onReconcile={handleReconcile} />
           )}
           
           {reconciliationResults && reconciliationResults.length > 0 && (
