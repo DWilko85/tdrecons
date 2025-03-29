@@ -39,78 +39,81 @@ export type Database = {
         }
         Relationships: []
       }
-      profiles: {
-        Row: {
-          avatar_url: string | null
-          Client: string | null
-          full_name: string | null
-          id: string
-          updated_at: string | null
-          username: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          Client?: string | null
-          full_name?: string | null
-          id: string
-          updated_at?: string | null
-          username?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          Client?: string | null
-          full_name?: string | null
-          id?: string
-          updated_at?: string | null
-          username?: string | null
-        }
-        Relationships: []
-      }
-      reconciliation_history: {
+      field_mappings: {
         Row: {
           created_at: string
-          description: string | null
-          different_records: number
+          file_a_id: string | null
+          file_b_id: string | null
           id: string
-          matching_records: number
-          missing_a_records: number
-          missing_b_records: number
-          name: string
-          results: Json
-          source_a_name: string
-          source_b_name: string
-          total_records: number
-          user_id: string
+          mapping: Json
+          name: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
-          description?: string | null
-          different_records: number
+          file_a_id?: string | null
+          file_b_id?: string | null
           id?: string
-          matching_records: number
-          missing_a_records: number
-          missing_b_records: number
-          name: string
-          results: Json
-          source_a_name: string
-          source_b_name: string
-          total_records: number
-          user_id: string
+          mapping: Json
+          name?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
-          description?: string | null
-          different_records?: number
+          file_a_id?: string | null
+          file_b_id?: string | null
           id?: string
-          matching_records?: number
-          missing_a_records?: number
-          missing_b_records?: number
-          name?: string
-          results?: Json
-          source_a_name?: string
-          source_b_name?: string
-          total_records?: number
-          user_id?: string
+          mapping?: Json
+          name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_mappings_file_a_id_fkey"
+            columns: ["file_a_id"]
+            isOneToOne: false
+            referencedRelation: "file_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_mappings_file_b_id_fkey"
+            columns: ["file_b_id"]
+            isOneToOne: false
+            referencedRelation: "file_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_uploads: {
+        Row: {
+          created_at: string
+          data: Json
+          file_name: string
+          file_type: string
+          headers: string[]
+          id: string
+          label: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data: Json
+          file_name: string
+          file_type: string
+          headers: string[]
+          id?: string
+          label?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          file_name?: string
+          file_type?: string
+          headers?: string[]
+          id?: string
+          label?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -122,17 +125,6 @@ export type Database = {
       create_data_sources_table: {
         Args: Record<PropertyKey, never>
         Returns: undefined
-      }
-      get_current_profile: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          avatar_url: string | null
-          Client: string | null
-          full_name: string | null
-          id: string
-          updated_at: string | null
-          username: string | null
-        }
       }
       initialize_data_sources_table: {
         Args: Record<PropertyKey, never>
