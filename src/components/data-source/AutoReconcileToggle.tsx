@@ -18,7 +18,7 @@ const AutoReconcileToggle: React.FC<AutoReconcileToggleProps> = ({
         id="auto-reconcile"
         checked={checked}
         onCheckedChange={(value) => {
-          // Ensure we're passing a boolean value
+          // Cast to boolean to ensure correct type
           onCheckedChange(Boolean(value));
         }}
       />

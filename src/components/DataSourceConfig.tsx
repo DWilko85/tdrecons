@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,10 +73,8 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
-  // Fix: Ensure we're correctly handling the boolean value
   const handleAutoReconcileChange = (checked: boolean) => {
-    // Ensure we're setting a boolean value, not a string
-    setAutoReconcileOnUpload(Boolean(checked));
+    setAutoReconcileOnUpload(checked);
   };
 
   const saveMappingsAsTemplate = async (templateName: string) => {
