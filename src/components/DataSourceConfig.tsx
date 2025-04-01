@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { MappingTemplate } from "./data-source/MappingTemplateSelector";
 import ConfigHeader from "./data-source/ConfigHeader";
 import SourceSections from "./data-source/SourceSections";
 import MappingFieldsSection from "./data-source/MappingFieldsSection";
+import AutoReconcileToggle from "./data-source/AutoReconcileToggle";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   DataSource, 
   DataSourceConfig, 
@@ -10,16 +10,10 @@ import { sampleSources } from '@/data/sampleSources';
 import { useMappings } from './useMappings';
 import { useSourceManagement } from './useSourceManagement';
 import { useReconciliation } from './useReconciliation';
+import { useFileUpload } from './useFileUpload';
 import { MappingTemplate } from '@/components/data-source/MappingTemplateSelector';
 
-// Re-export types with correct syntax
-export type { 
-  DataSource,
-  DataSourceConfig,
-  FieldMapping,
-  ReconciliationResult
-};
-
+// Main hook that combines all data source functionality
 export function useDataSources() {
   const [availableSources, setAvailableSources] = useState<DataSource[]>(sampleSources);
   const [config, setConfig] = useState<DataSourceConfig>({
@@ -32,7 +26,7 @@ export function useDataSources() {
     },
   });
   
-  // Use our new custom hooks
+  // Use our specialized hooks
   const { 
     reconciliationResults, 
     isReconciling, 
@@ -59,14 +53,53 @@ export function useDataSources() {
     addUploadedFileSource,
     loadDataSources
   } = useSourceManagement(config, setConfig, availableSources, setAvailableSources);
+  
+  const {
+    addFileSourceAndReconcile
+  } = useFileUpload(config, addUploadedFileSource, setSourceA, setSourceB, generateMappings, performAutoReconcile);
 
   // Load data sources from database on initial load
   useEffect(() => {
     loadDataSources();
   }, [loadDataSources]);
 
-  // Apply mapping template to current configuration
-  const applyMappingTemplate = useCallback((template: MappingTemplate) => {
+  // Wrapper around the reconcile function that uses the current config
+  const reconcile = performReconcile;
+
+  // Wrapper around the autoReconcile function that uses the current config
+  const autoReconcile = performAutoReconcile;
+
+  return {
+    availableSources,
+    config,
+    reconciliationResults,
+    isReconciling,
+    lastConfig,
+    setSourceA,
+    setSourceB,
+    updateMapping,
+    addMapping,
+    removeMapping,
+    swapMappingFields,
+    updateKeyMapping,
+    reconcile,
+    clearResults,
+    autoReconcile,
+    addUploadedFileSource,
+    addFileSourceAndReconcile,
+    generateMappings,
+    loadDataSources,
+    getAvailableFields,
+    applyMappingTemplate: useMappingTemplate(config, setConfig)
+  };
+}
+
+// This hook manages mapping templates
+function useMappingTemplate(
+  config: DataSourceConfig, 
+  setConfig: React.Dispatch<React.SetStateAction<DataSourceConfig>>
+) {
+  return (template: MappingTemplate) => {
     if (!template || !template.mapping) {
       console.error("Invalid template data");
       return;
@@ -99,120 +132,5 @@ export function useDataSources() {
     } catch (error) {
       console.error("Error applying mapping template:", error);
     }
-  }, [config.keyMapping, setConfig]);
-
-  // Wrapper around the reconcile function that uses the current config
-  const reconcile = useCallback(() => {
-    console.log("Reconcile called with config:", {
-      sourceA: config.sourceA?.name,
-      sourceB: config.sourceB?.name,
-      mappings: config.mappings.length,
-      dataA: config.sourceA?.data.length,
-      dataB: config.sourceB?.data.length
-    });
-    
-    // Perform the reconciliation with the current config
-    return performReconcile(config);
-  }, [config, performReconcile]);
-
-  // Wrapper around the autoReconcile function that uses the current config
-  const autoReconcile = useCallback((updatedConfig: DataSourceConfig) => {
-    return performAutoReconcile(updatedConfig);
-  }, [performAutoReconcile]);
-
-  // Add a file source and optionally set it as source A or B and auto-reconcile
-  const addFileSourceAndReconcile = useCallback(async (
-    data: Record<string, any>[], 
-    fileName: string,
-    setAs?: 'sourceA' | 'sourceB' | 'auto',
-    autoRunReconciliation: boolean = false
-  ): Promise<DataSource | null> => {
-    if (!data || data.length === 0) {
-      console.error("No data provided for file source");
-      return null;
-    }
-    
-    console.log(`Adding file source with ${data.length} records from ${fileName}`);
-    
-    try {
-      const newSource = await addUploadedFileSource(data, fileName);
-      
-      if (!newSource) {
-        console.error("Failed to create source from uploaded file");
-        return null;
-      }
-      
-      console.log("New source created:", newSource.name, "with", newSource.data.length, "records");
-      
-      // Determine where to set the new source based on the setAs parameter
-      let updatedSourceA = config.sourceA;
-      let updatedSourceB = config.sourceB;
-      
-      if (setAs === 'sourceA' || (setAs === 'auto' && !config.sourceA)) {
-        updatedSourceA = newSource;
-        console.log("Setting as source A:", newSource.name);
-        setSourceA(newSource);
-      } 
-      else if (setAs === 'sourceB' || (setAs === 'auto' && !config.sourceB && config.sourceA)) {
-        updatedSourceB = newSource;
-        console.log("Setting as source B:", newSource.name);
-        setSourceB(newSource);
-      }
-      
-      // If both sources are now set, auto-reconcile if requested
-      if (autoRunReconciliation && updatedSourceA && updatedSourceB) {
-        console.log("Auto-reconciling with sources:", updatedSourceA.name, "and", updatedSourceB.name);
-        
-        // Create an updated config for reconciliation
-        const updatedConfig = {
-          ...config,
-          sourceA: updatedSourceA,
-          sourceB: updatedSourceB,
-          // Ensure we have mappings
-          mappings: config.mappings.length > 0 ? 
-            config.mappings : 
-            generateMappings(updatedSourceA, updatedSourceB),
-          keyMapping: {
-            sourceAField: config.keyMapping.sourceAField || updatedSourceA.keyField,
-            sourceBField: config.keyMapping.sourceBField || updatedSourceB.keyField,
-          }
-        };
-        
-        // We need to wait a bit for the state to update before reconciling
-        setTimeout(() => {
-          console.log("Executing auto-reconcile with updated config");
-          autoReconcile(updatedConfig);
-        }, 300);
-      }
-      
-      return newSource;
-    } catch (error) {
-      console.error("Error in addFileSourceAndReconcile:", error);
-      return null;
-    }
-  }, [addUploadedFileSource, setSourceA, setSourceB, config, autoReconcile, generateMappings]);
-
-  return {
-    availableSources,
-    config,
-    reconciliationResults,
-    isReconciling,
-    lastConfig,
-    setSourceA,
-    setSourceB,
-    updateMapping,
-    addMapping,
-    removeMapping,
-    swapMappingFields,
-    updateKeyMapping,
-    reconcile,
-    clearResults,
-    autoReconcile,
-    addUploadedFileSource,
-    addFileSourceAndReconcile,
-    generateMappings,
-    loadDataSources,
-    getAvailableFields,
-    applyMappingTemplate
   };
 }
