@@ -149,7 +149,7 @@ const MappingTemplateSelector: React.FC<MappingTemplateSelectorProps> = ({
           <SelectValue placeholder={loading ? "Loading templates..." : "Select a template"} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">None (Start fresh)</SelectItem>
+          <SelectItem value="none">None (Start fresh)</SelectItem>
           
           {templates.map(template => (
             <SelectItem 
