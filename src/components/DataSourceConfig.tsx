@@ -1,4 +1,3 @@
-
 import React from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +38,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onApplyMappingTemplate,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
-  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(false);
+  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState<boolean>(false);
   const [isSavingMappings, setIsSavingMappings] = React.useState(false);
 
   const canReconcile = 
@@ -50,15 +49,11 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     keyMapping.sourceBField;
 
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
-    // Ensure we're passing a boolean by using Boolean()
-    const autoReconcileValue = Boolean(autoReconcileOnUpload);
-    onFileUpload(data, fileName, 'sourceA', autoReconcileValue);
+    onFileUpload(data, fileName, 'sourceA', autoReconcileOnUpload);
   };
 
   const handleFileUploadForSourceB = (data: any[], fileName: string) => {
-    // Ensure we're passing a boolean by using Boolean()
-    const autoReconcileValue = Boolean(autoReconcileOnUpload);
-    onFileUpload(data, fileName, 'sourceB', autoReconcileValue);
+    onFileUpload(data, fileName, 'sourceB', autoReconcileOnUpload);
   };
 
   const handleAddMapping = () => {
