@@ -1,3 +1,4 @@
+
 import React from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,12 +50,14 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     keyMapping.sourceBField;
 
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
-    const autoReconcileValue: boolean = autoReconcileOnUpload;
+    // Ensure we're passing a boolean by using Boolean()
+    const autoReconcileValue = Boolean(autoReconcileOnUpload);
     onFileUpload(data, fileName, 'sourceA', autoReconcileValue);
   };
 
   const handleFileUploadForSourceB = (data: any[], fileName: string) => {
-    const autoReconcileValue: boolean = autoReconcileOnUpload;
+    // Ensure we're passing a boolean by using Boolean()
+    const autoReconcileValue = Boolean(autoReconcileOnUpload);
     onFileUpload(data, fileName, 'sourceB', autoReconcileValue);
   };
 
