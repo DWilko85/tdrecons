@@ -72,6 +72,10 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
+  const handleAutoReconcileChange = (checked: boolean) => {
+    setAutoReconcileOnUpload(checked);
+  };
+
   const saveMappingsAsTemplate = async (templateName: string) => {
     if (!sourceA || !sourceB || mappings.length === 0) {
       toast.error("Cannot save an empty template");
@@ -219,7 +223,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             onUpdateMapping={onUpdateMapping}
             onRemoveMapping={onRemoveMapping}
             onSwapMappingFields={onSwapMappingFields}
-            onAutoReconcileChange={setAutoReconcileOnUpload}
+            onAutoReconcileChange={handleAutoReconcileChange}
             onReconcile={handleReconcile}
             onSaveTemplate={saveMappingsAsTemplate}
           />
