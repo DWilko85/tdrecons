@@ -7,6 +7,7 @@ import { DataSource, DataSourceConfig as DataSourceConfigType, FieldMapping } fr
 import SourceSection from "./data-source/SourceSection";
 import FieldMappingsCard from "./data-source/FieldMappingsCard";
 import MappingTemplateSelector, { MappingTemplate } from "./data-source/MappingTemplateSelector";
+import AutoReconcileToggle from "./data-source/AutoReconcileToggle";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
