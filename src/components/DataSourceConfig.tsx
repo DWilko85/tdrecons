@@ -74,8 +74,10 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
+  // Fix: Ensure we're correctly handling the boolean value
   const handleAutoReconcileChange = (checked: boolean) => {
-    setAutoReconcileOnUpload(checked);
+    // Ensure we're setting a boolean value, not a string
+    setAutoReconcileOnUpload(Boolean(checked));
   };
 
   const saveMappingsAsTemplate = async (templateName: string) => {
