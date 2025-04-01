@@ -1,13 +1,14 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import AnimatedTransition from "./AnimatedTransition";
-import { DataSource, DataSourceConfig as DataSourceConfigType, FieldMapping } from "@/hooks/useDataSources";
-import SourceSection from "./data-source/SourceSection";
-import FieldMappingsCard from "./data-source/FieldMappingsCard";
-import MappingTemplateSelector, { MappingTemplate } from "./data-source/MappingTemplateSelector";
-import AutoReconcileToggle from "./data-source/AutoReconcileToggle";
+import { DataSource, DataSourceConfig as DataSourceConfigType, FieldMapping } from "@/types/dataSources";
+import { MappingTemplate } from "./data-source/MappingTemplateSelector";
+import ConfigHeader from "./data-source/ConfigHeader";
+import SourceSections from "./data-source/SourceSections";
+import MappingFieldsSection from "./data-source/MappingFieldsSection";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -39,8 +40,8 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onApplyMappingTemplate,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
-  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState<boolean>(false);
-  const [isSavingMappings, setIsSavingMappings] = React.useState(false);
+  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = useState<boolean>(false);
+  const [isSavingMappings, setIsSavingMappings] = useState(false);
 
   const canReconcile = 
     sourceA !== null && 
@@ -180,55 +181,35 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
 
   return (
     <div className="space-y-6">
+      <ConfigHeader onSelectTemplate={handleSelectTemplate} />
+      
       <AnimatedTransition type="slide-up" delay={0.1}>
-        <div className="mb-6">
-          <MappingTemplateSelector 
-            onSelectTemplate={handleSelectTemplate}
-          />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <SourceSection
-            title="Principal Data"
-            description="Select your principal data source for reconciliation"
-            badgeText="Principal"
-            badgeClassName="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-            source={sourceA}
-            keyField={keyMapping.sourceAField}
-            onFileUpload={handleFileUploadForSourceA}
-          />
-
-          <SourceSection
-            title="Counterparty Data"
-            description="Select the counterparty data source to compare against"
-            badgeText="Counterparty"
-            badgeClassName="bg-secondary text-secondary-foreground border-secondary/50 hover:bg-secondary/80"
-            source={sourceB}
-            keyField={keyMapping.sourceBField}
-            onFileUpload={handleFileUploadForSourceB}
-          />
-        </div>
+        <SourceSections 
+          sourceA={sourceA}
+          sourceB={sourceB}
+          keyMapping={keyMapping}
+          onFileUploadForSourceA={handleFileUploadForSourceA}
+          onFileUploadForSourceB={handleFileUploadForSourceB}
+        />
       </AnimatedTransition>
 
       {sourceA && sourceB && (
-        <AnimatedTransition type="slide-up" delay={0.2}>
-          <FieldMappingsCard
-            sourceA={sourceA}
-            sourceB={sourceB}
-            mappings={mappings}
-            keyMapping={keyMapping}
-            canReconcile={canReconcile}
-            isSavingMappings={isSavingMappings}
-            autoReconcileOnUpload={autoReconcileOnUpload}
-            onAddMapping={handleAddMapping}
-            onUpdateMapping={onUpdateMapping}
-            onRemoveMapping={onRemoveMapping}
-            onSwapMappingFields={onSwapMappingFields}
-            onAutoReconcileChange={handleAutoReconcileChange}
-            onReconcile={handleReconcile}
-            onSaveTemplate={saveMappingsAsTemplate}
-          />
-        </AnimatedTransition>
+        <MappingFieldsSection
+          sourceA={sourceA}
+          sourceB={sourceB}
+          mappings={mappings}
+          keyMapping={keyMapping}
+          canReconcile={canReconcile}
+          isSavingMappings={isSavingMappings}
+          autoReconcileOnUpload={autoReconcileOnUpload}
+          onAddMapping={handleAddMapping}
+          onUpdateMapping={onUpdateMapping}
+          onRemoveMapping={onRemoveMapping}
+          onSwapMappingFields={onSwapMappingFields}
+          onAutoReconcileChange={handleAutoReconcileChange}
+          onReconcile={handleReconcile}
+          onSaveTemplate={saveMappingsAsTemplate}
+        />
       )}
     </div>
   );
