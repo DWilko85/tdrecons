@@ -7,6 +7,7 @@ import { useDataSources } from "@/hooks/useDataSources";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { MappingTemplate } from "@/components/data-source/MappingTemplateSelector";
 
 const Configure = () => {
   const navigate = useNavigate();
@@ -23,7 +24,8 @@ const Configure = () => {
     reconcile,
     reconciliationResults,
     addFileSourceAndReconcile,
-    loadDataSources
+    loadDataSources,
+    applyMappingTemplate
   } = useDataSources();
 
   // Load data sources on initial render
@@ -78,6 +80,12 @@ const Configure = () => {
     
     // Navigate to the results page
     navigate("/reconcile", { state: { runReconciliation: true } });
+  };
+
+  // Handle application of a mapping template
+  const handleApplyMappingTemplate = (template: MappingTemplate) => {
+    applyMappingTemplate(template);
+    toast.success(`Applied mapping template: ${template.name}`);
   };
 
   // Handle file upload with potential automatic reconciliation
@@ -144,6 +152,7 @@ const Configure = () => {
             onUpdateKeyMapping={updateKeyMapping}
             onReconcile={handleReconcile}
             onFileUpload={handleUploadFile}
+            onApplyMappingTemplate={handleApplyMappingTemplate}
           />
         </div>
       </section>

@@ -10,15 +10,20 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { DataSource, FieldMapping } from "@/hooks/useDataSources";
+import { DataSource, FieldMapping } from "@/types/dataSources";
 import MappingsTable from "./MappingsTable";
 import AutoReconcileToggle from "./AutoReconcileToggle";
 import ReconcileButton from "./ReconcileButton";
+import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
 
 interface FieldMappingsCardProps {
   sourceA: DataSource | null;
   sourceB: DataSource | null;
   mappings: FieldMapping[];
+  keyMapping: {
+    sourceAField: string;
+    sourceBField: string;
+  };
   canReconcile: boolean;
   isSavingMappings: boolean;
   autoReconcileOnUpload: boolean;
@@ -28,12 +33,14 @@ interface FieldMappingsCardProps {
   onSwapMappingFields: (index: number) => void;
   onAutoReconcileChange: (checked: boolean) => void;
   onReconcile: () => void;
+  onSaveTemplate: (name: string) => Promise<boolean>;
 }
 
 const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
   sourceA,
   sourceB,
   mappings,
+  keyMapping,
   canReconcile,
   isSavingMappings,
   autoReconcileOnUpload,
@@ -43,6 +50,7 @@ const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
   onSwapMappingFields,
   onAutoReconcileChange,
   onReconcile,
+  onSaveTemplate,
 }) => {
   return (
     <Card className="border border-border/50 shadow-sm">
@@ -54,15 +62,24 @@ const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
               Configure which fields to compare between data sources
             </CardDescription>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1"
-            onClick={onAddMapping}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Mapping
-          </Button>
+          <div className="flex gap-2">
+            <SaveMappingTemplateDialog 
+              mappings={mappings}
+              keyMapping={keyMapping}
+              onSave={onSaveTemplate}
+              sourceAName={sourceA?.name}
+              sourceBName={sourceB?.name}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 gap-1"
+              onClick={onAddMapping}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Mapping
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

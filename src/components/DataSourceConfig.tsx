@@ -7,6 +7,7 @@ import AnimatedTransition from "./AnimatedTransition";
 import { DataSource, DataSourceConfig as DataSourceConfigType, FieldMapping } from "@/hooks/useDataSources";
 import SourceSection from "./data-source/SourceSection";
 import FieldMappingsCard from "./data-source/FieldMappingsCard";
+import MappingTemplateSelector, { MappingTemplate } from "./data-source/MappingTemplateSelector";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -20,6 +21,7 @@ interface DataSourceConfigProps {
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
   onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | null | undefined;
+  onApplyMappingTemplate: (template: MappingTemplate) => void;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
@@ -34,6 +36,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onUpdateKeyMapping,
   onReconcile,
   onFileUpload,
+  onApplyMappingTemplate,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
   const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(false);
@@ -61,6 +64,57 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
     
     onAddMapping();
+  };
+
+  const handleSelectTemplate = (template: MappingTemplate | null) => {
+    if (template) {
+      console.log("Selected template:", template);
+      onApplyMappingTemplate(template);
+    }
+  };
+
+  const saveMappingsAsTemplate = async (templateName: string) => {
+    if (!sourceA || !sourceB || mappings.length === 0) {
+      toast.error("Cannot save an empty template");
+      return false;
+    }
+
+    try {
+      setIsSavingMappings(true);
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      
+      const mappingData = {
+        name: templateName,
+        file_a_id: sourceA.id,
+        file_b_id: sourceB.id,
+        user_id: userId,
+        mapping: JSON.stringify({
+          fields: mappings,
+          keyMapping: keyMapping
+        }) as unknown as Json
+      };
+      
+      const { error } = await supabase
+        .from('field_mappings')
+        .insert(mappingData);
+      
+      if (error) {
+        console.error("Error saving template:", error);
+        toast.error("Failed to save template");
+        return false;
+      }
+      
+      console.log("Mapping template saved successfully");
+      return true;
+    } catch (err) {
+      console.error("Error in saveMappingsAsTemplate:", err);
+      toast.error("Error saving template");
+      return false;
+    } finally {
+      setIsSavingMappings(false);
+    }
   };
 
   const saveMappingsToDatabase = async () => {
@@ -123,6 +177,12 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   return (
     <div className="space-y-6">
       <AnimatedTransition type="slide-up" delay={0.1}>
+        <div className="mb-6">
+          <MappingTemplateSelector 
+            onSelectTemplate={handleSelectTemplate}
+          />
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <SourceSection
             title="Principal Data"
@@ -152,6 +212,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             sourceA={sourceA}
             sourceB={sourceB}
             mappings={mappings}
+            keyMapping={keyMapping}
             canReconcile={canReconcile}
             isSavingMappings={isSavingMappings}
             autoReconcileOnUpload={autoReconcileOnUpload}
@@ -161,6 +222,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             onSwapMappingFields={onSwapMappingFields}
             onAutoReconcileChange={setAutoReconcileOnUpload}
             onReconcile={handleReconcile}
+            onSaveTemplate={saveMappingsAsTemplate}
           />
         </AnimatedTransition>
       )}

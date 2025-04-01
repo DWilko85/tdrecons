@@ -10,6 +10,7 @@ import { sampleSources } from '@/data/sampleSources';
 import { useMappings } from './useMappings';
 import { useSourceManagement } from './useSourceManagement';
 import { useReconciliation } from './useReconciliation';
+import { MappingTemplate } from '@/components/data-source/MappingTemplateSelector';
 
 // Re-export types with correct syntax
 export type { 
@@ -64,6 +65,42 @@ export function useDataSources() {
     loadDataSources();
   }, [loadDataSources]);
 
+  // Apply mapping template to current configuration
+  const applyMappingTemplate = useCallback((template: MappingTemplate) => {
+    if (!template || !template.mapping) {
+      console.error("Invalid template data");
+      return;
+    }
+
+    try {
+      const { fields, keyMapping } = template.mapping;
+      
+      // Update mappings if available
+      if (Array.isArray(fields) && fields.length > 0) {
+        const formattedMappings: FieldMapping[] = fields.map(field => ({
+          sourceFieldA: field.sourceFieldA,
+          sourceFieldB: field.sourceFieldB,
+          displayName: field.displayName,
+        }));
+        
+        // Update key mapping if available
+        const updatedKeyMapping = keyMapping ? {
+          sourceAField: keyMapping.sourceAField || '',
+          sourceBField: keyMapping.sourceBField || '',
+        } : config.keyMapping;
+        
+        // Update config with template data
+        setConfig(prevConfig => ({
+          ...prevConfig,
+          mappings: formattedMappings,
+          keyMapping: updatedKeyMapping,
+        }));
+      }
+    } catch (error) {
+      console.error("Error applying mapping template:", error);
+    }
+  }, [config.keyMapping, setConfig]);
+
   // Wrapper around the reconcile function that uses the current config
   const reconcile = useCallback(() => {
     console.log("Reconcile called with config:", {
@@ -88,7 +125,7 @@ export function useDataSources() {
     data: Record<string, any>[], 
     fileName: string,
     setAs?: 'sourceA' | 'sourceB' | 'auto',
-    autoRunReconciliation: boolean = true
+    autoRunReconciliation: boolean = false
   ): Promise<DataSource | null> => {
     if (!data || data.length === 0) {
       console.error("No data provided for file source");
@@ -175,6 +212,7 @@ export function useDataSources() {
     addFileSourceAndReconcile,
     generateMappings,
     loadDataSources,
-    getAvailableFields
+    getAvailableFields,
+    applyMappingTemplate
   };
 }
