@@ -1,20 +1,20 @@
-
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import ReconciliationTable from "@/components/ReconciliationTable";
-import { useDataSources } from "@/hooks/useDataSources";
-import AnimatedTransition from "@/components/AnimatedTransition";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
 import ReconciliationStats from "@/components/ReconciliationStats";
+import ReconciliationTable from "@/components/ReconciliationTable";
 import SourceInfo from "@/components/SourceInfo";
-import PerfectMatchBanner from "@/components/PerfectMatchBanner";
-import ReconcileHeader from "@/components/reconciliation/ReconcileHeader";
 import LoadingState from "@/components/reconciliation/LoadingState";
 import NoConfigMessage from "@/components/reconciliation/NoConfigMessage";
 import NoResultsMessage from "@/components/reconciliation/NoResultsMessage";
+import ReconcileHeader from "@/components/reconciliation/ReconcileHeader";
+import PerfectMatchBanner from "@/components/PerfectMatchBanner";
+import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
+import AnimatedTransition from "@/components/AnimatedTransition";
+import { useDataSources } from "@/hooks/useDataSources";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 const Reconcile = () => {
   const navigate = useNavigate();
@@ -29,8 +29,8 @@ const Reconcile = () => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
+  const [runReconciliation, setRunReconciliation] = useState(true);
 
-  // Debug logs to help diagnose the issue
   useEffect(() => {
     console.log("Reconcile page state:", { 
       resultsLength: reconciliationResults?.length || 0,
@@ -43,11 +43,9 @@ const Reconcile = () => {
     });
   }, [reconciliationResults, isReconciling, config]);
 
-  // Check if we're coming from Configure page with intention to reconcile
   useEffect(() => {
     const shouldRunReconciliation = location.state?.runReconciliation === true;
     
-    // Only auto-run reconciliation if explicitly requested through navigation state
     if (!initialLoadDone && shouldRunReconciliation) {
       console.log("Running reconciliation due to explicit navigation request");
       if (config.sourceA && config.sourceB && config.mappings.length > 0) {
@@ -57,15 +55,12 @@ const Reconcile = () => {
     setInitialLoadDone(true);
   }, [location.state, initialLoadDone]);
 
-  // Show loading state when reconciling or no results
   useEffect(() => {
     if (isReconciling) {
       setShowLoadingState(true);
     } else if (reconciliationResults.length > 0) {
-      // If we have results, don't show loading state
       setShowLoadingState(false);
     } else {
-      // Show loading state after a small delay to prevent flashing
       const timeout = setTimeout(() => {
         setShowLoadingState(true);
       }, 500);
@@ -74,7 +69,6 @@ const Reconcile = () => {
     }
   }, [reconciliationResults, isReconciling]);
 
-  // Calculate statistics for saving to the database
   const stats = {
     total: reconciliationResults.length,
     matching: reconciliationResults.filter(r => r.status === 'matching').length,
@@ -83,29 +77,23 @@ const Reconcile = () => {
     missingB: reconciliationResults.filter(r => r.status === 'missing-b').length,
   };
 
-  // Check if we have a perfect match (all records match)
   const isPerfectMatch = reconciliationResults.length > 0 && 
     stats.matching === stats.total && 
     stats.different === 0 && 
     stats.missingA === 0 && 
     stats.missingB === 0;
 
-  // Trigger reconciliation
   const handleReconcile = () => {
-    // Make sure we have valid config
-    if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
-      toast.error("Please configure both data sources and field mappings");
+    if (!config.sourceA || !config.sourceB) {
+      toast.error("Please configure data sources first");
       navigate("/configure");
       return;
     }
     
-    // Reset loading state and run reconciliation
-    setShowLoadingState(true);
-    console.log("Manually triggering reconciliation");
-    reconcile(); // Use the current config for reconciliation
+    reconcile();
+    setRunReconciliation(false);
   };
 
-  // Save reconciliation to database
   const saveReconciliation = async (name: string, description: string) => {
     if (!config.sourceA || !config.sourceB || reconciliationResults.length === 0) {
       toast.error("No reconciliation data to save");
@@ -122,10 +110,8 @@ const Reconcile = () => {
         return;
       }
 
-      // Convert reconciliationResults to a JSON-compatible format
       const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
 
-      // For debugging
       console.log("Saving reconciliation with", reconciliationResults.length, "records");
 
       const { error } = await supabase.from('reconciliation_history').insert({
@@ -156,7 +142,6 @@ const Reconcile = () => {
     }
   };
 
-  // Determine what to show based on the state
   const shouldShowNoConfigMessage = !config.sourceA || !config.sourceB || config.mappings.length === 0;
   const shouldShowNoResultsMessage = !isReconciling && reconciliationResults.length === 0 && !shouldShowNoConfigMessage;
   const shouldShowResults = reconciliationResults.length > 0;
@@ -166,7 +151,6 @@ const Reconcile = () => {
     <div className="min-h-screen pb-16">
       <Navbar />
       
-      {/* Header */}
       <section className="pt-28 pb-8">
         <div className="container max-w-6xl">
           <ReconcileHeader
@@ -196,7 +180,6 @@ const Reconcile = () => {
         </div>
       </section>
       
-      {/* Results Table */}
       <section>
         <div className="container max-w-6xl">
           {shouldShowLoading && <LoadingState />}

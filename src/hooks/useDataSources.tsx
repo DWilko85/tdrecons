@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   DataSource, 
@@ -64,10 +63,10 @@ export function useDataSources() {
   }, [loadDataSources]);
 
   // Wrapper around the reconcile function that uses the current config
-  const reconcile = performReconcile;
+  const reconcile = () => performReconcile(config);
 
   // Wrapper around the autoReconcile function that uses the current config
-  const autoReconcile = performAutoReconcile;
+  const autoReconcile = () => performAutoReconcile(config);
 
   return {
     availableSources,
@@ -134,3 +133,6 @@ function useMappingTemplate(
     }
   };
 }
+
+// Re-export types from types/dataSources.ts for components that import from this file
+export type { DataSource, DataSourceConfig, FieldMapping, ReconciliationResult } from '@/types/dataSources';

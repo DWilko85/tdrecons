@@ -1,8 +1,9 @@
 
 import React from "react";
-import { DataSource, FieldMapping } from "@/types/dataSources";
+import { DataSource, FieldMapping } from "@/hooks/useDataSources";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import FieldMappingsCard from "./FieldMappingsCard";
+import DataSourceActions from "./DataSourceActions";
 
 interface MappingFieldsSectionProps {
   sourceA: DataSource | null;
@@ -41,6 +42,13 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   onSaveTemplate,
 }) => {
   if (!sourceA || !sourceB) return null;
+  
+  const config = {
+    sourceA,
+    sourceB,
+    mappings,
+    keyMapping
+  };
 
   return (
     <AnimatedTransition type="slide-up" delay={0.2}>
@@ -51,15 +59,24 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
         keyMapping={keyMapping}
         canReconcile={canReconcile}
         isSavingMappings={isSavingMappings}
-        autoReconcileOnUpload={autoReconcileOnUpload}
         onAddMapping={onAddMapping}
         onUpdateMapping={onUpdateMapping}
         onRemoveMapping={onRemoveMapping}
         onSwapMappingFields={onSwapMappingFields}
-        onAutoReconcileChange={onAutoReconcileChange}
-        onReconcile={onReconcile}
         onSaveTemplate={onSaveTemplate}
       />
+      
+      <div className="mt-6">
+        <DataSourceActions
+          config={config}
+          canReconcile={canReconcile}
+          isSavingMappings={isSavingMappings}
+          autoReconcileOnUpload={autoReconcileOnUpload}
+          onAutoReconcileChange={onAutoReconcileChange}
+          onReconcile={onReconcile}
+          onSaveTemplate={onSaveTemplate}
+        />
+      </div>
     </AnimatedTransition>
   );
 };
