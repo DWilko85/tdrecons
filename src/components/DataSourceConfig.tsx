@@ -50,10 +50,12 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     keyMapping.sourceBField;
 
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
+    // Explicitly pass the boolean value of autoReconcileOnUpload
     onFileUpload(data, fileName, 'sourceA', autoReconcileOnUpload);
   };
 
   const handleFileUploadForSourceB = (data: any[], fileName: string) => {
+    // Explicitly pass the boolean value of autoReconcileOnUpload
     onFileUpload(data, fileName, 'sourceB', autoReconcileOnUpload);
   };
 

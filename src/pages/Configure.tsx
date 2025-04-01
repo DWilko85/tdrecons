@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -28,19 +27,13 @@ const Configure = () => {
     applyMappingTemplate
   } = useDataSources();
 
-  // Load data sources on initial render
   useEffect(() => {
-    // Check if database table exists
     checkDatabaseTable();
-    
-    // Load data sources
     loadDataSources();
   }, [loadDataSources]);
 
-  // Check if database table exists and create if needed
   const checkDatabaseTable = async () => {
     try {
-      // Check if we can query the data_sources table
       const { error } = await supabase
         .from('data_sources')
         .select('count')
@@ -55,14 +48,12 @@ const Configure = () => {
     }
   };
 
-  // Check if reconciliation has been run and navigate if needed
   useEffect(() => {
     if (reconciliationResults.length > 0) {
       navigate("/reconcile");
     }
   }, [reconciliationResults, navigate]);
 
-  // Handle the reconciliation button click
   const handleReconcile = () => {
     console.log("Handle reconcile clicked, current config:", {
       sourceA: config.sourceA?.name,
@@ -75,28 +66,21 @@ const Configure = () => {
       return;
     }
     
-    // Trigger reconciliation
     reconcile();
-    
-    // Navigate to the results page
     navigate("/reconcile", { state: { runReconciliation: true } });
   };
 
-  // Handle application of a mapping template
   const handleApplyMappingTemplate = (template: MappingTemplate) => {
     applyMappingTemplate(template);
     toast.success(`Applied mapping template: ${template.name}`);
   };
 
-  // Handle file upload with potential automatic reconciliation
   const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = false) => {
     console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
     
-    // Call the async function without waiting for it
     addFileSourceAndReconcile(data, fileName, setAs, autoReconcile)
       .then(newSource => {
         if (newSource && autoReconcile && config.sourceA && config.sourceB) {
-          // If auto-reconcile is enabled and we have both sources, navigate to results
           console.log("Auto-navigating to reconcile page after file upload");
           setTimeout(() => {
             navigate("/reconcile", { state: { runReconciliation: true } });
@@ -108,7 +92,6 @@ const Configure = () => {
         toast.error("Error processing file");
       });
     
-    // Create a temporary DataSource to return immediately
     return {
       id: `temp-${Date.now()}`,
       name: fileName,
@@ -123,7 +106,6 @@ const Configure = () => {
     <div className="min-h-screen pb-16">
       <Navbar />
       
-      {/* Header */}
       <section className="pt-28 pb-10">
         <div className="container max-w-6xl">
           <AnimatedTransition type="slide-down" delay={0.1}>
@@ -137,7 +119,6 @@ const Configure = () => {
         </div>
       </section>
       
-      {/* Config Form */}
       <section>
         <div className="container max-w-6xl">
           <DataSourceConfig 
