@@ -17,10 +17,7 @@ const AutoReconcileToggle: React.FC<AutoReconcileToggleProps> = ({
       <Switch 
         id="auto-reconcile"
         checked={checked}
-        onCheckedChange={(value) => {
-          // Force the value to be a boolean with double negation
-          onCheckedChange(!!value);
-        }}
+        onCheckedChange={onCheckedChange}
       />
       <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>
     </div>
