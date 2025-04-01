@@ -18,8 +18,8 @@ const AutoReconcileToggle: React.FC<AutoReconcileToggleProps> = ({
         id="auto-reconcile"
         checked={checked}
         onCheckedChange={(value) => {
-          // Cast to boolean to ensure correct type
-          onCheckedChange(Boolean(value));
+          // Force the value to be a boolean with double negation
+          onCheckedChange(!!value);
         }}
       />
       <Label htmlFor="auto-reconcile">Auto-reconcile on upload</Label>

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,7 +74,9 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
+  // Ensure the function accepts and handles a boolean value
   const handleAutoReconcileChange = (checked: boolean) => {
+    // Set the state directly with the boolean value
     setAutoReconcileOnUpload(checked);
   };
 
