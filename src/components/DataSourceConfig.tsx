@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { 
   Card, 
@@ -35,7 +34,6 @@ import {
   Upload,
   RefreshCw,
   CheckCircle2,
-  SwapHorizontal
 } from "lucide-react";
 import { 
   DataSource, 
@@ -87,11 +85,9 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onFileUpload,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
-  // Set autoReconcileOnUpload to false by default to prevent automatic reconciliation
   const [autoReconcileOnUpload, setAutoReconcileOnUpload] = React.useState(false);
   const [isSavingMappings, setIsSavingMappings] = React.useState(false);
 
-  // Check if configuration is valid to enable reconciliation
   const canReconcile = 
     sourceA !== null && 
     sourceB !== null && 
@@ -99,7 +95,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     keyMapping.sourceAField && 
     keyMapping.sourceBField;
 
-  // Handle file upload and set as source
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
     onFileUpload(data, fileName, 'sourceA', autoReconcileOnUpload);
   };
@@ -108,7 +103,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onFileUpload(data, fileName, 'sourceB', autoReconcileOnUpload);
   };
 
-  // Handle adding a new mapping
   const handleAddMapping = () => {
     if (!sourceA || !sourceB) {
       toast.error("Please select both data sources first");
@@ -118,7 +112,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onAddMapping();
   };
 
-  // Save field mappings to database before reconciliation
   const saveMappingsToDatabase = async () => {
     if (!sourceA || !sourceB || mappings.length === 0) {
       return false;
@@ -127,20 +120,16 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     try {
       setIsSavingMappings(true);
       
-      // Get the current user session
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id;
       
       if (!userId) {
         console.log("No user ID available for saving mappings");
-        // Continue without saving mappings if user is not logged in
         return true;
       }
       
-      // Create a mapping name based on the source names
       const mappingName = `${sourceA.name} to ${sourceB.name} mapping`;
       
-      // Prepare the mapping data - Convert to JSON compatible format
       const mappingData = {
         name: mappingName,
         file_a_id: sourceA.id,
@@ -152,14 +141,12 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
         }) as unknown as Json
       };
       
-      // Save to the field_mappings table
       const { error } = await supabase
         .from('field_mappings')
         .insert(mappingData);
       
       if (error) {
         console.error("Error saving mappings:", error);
-        // Continue with reconciliation even if mapping save fails
         return true;
       }
       
@@ -167,39 +154,32 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       return true;
     } catch (err) {
       console.error("Error in saveMappingsToDatabase:", err);
-      return true; // Continue with reconciliation even if there's an error
+      return true;
     } finally {
       setIsSavingMappings(false);
     }
   };
 
-  // Start reconciliation
   const handleReconcile = async () => {
     if (canReconcile) {
-      // First save mappings to database
       await saveMappingsToDatabase();
-      
-      // Then trigger reconciliation
       onReconcile();
     } else {
       toast.error("Please complete the configuration before reconciling");
     }
   };
 
-  // Get all available fields for source A and B
   const getSourceFields = (source: DataSource | null) => {
     if (!source) return [];
     return source.fields;
   };
 
-  // Handle field change in mapping
   const handleFieldChange = (index: number, field: string, isSourceA: boolean) => {
     const mapping = mappings[index];
     const updatedMapping = isSourceA 
       ? { ...mapping, sourceFieldA: field }
       : { ...mapping, sourceFieldB: field };
 
-    // Update display name if both fields are selected
     if (updatedMapping.sourceFieldA && updatedMapping.sourceFieldB) {
       updatedMapping.displayName = getDisplayName(updatedMapping.sourceFieldA, updatedMapping.sourceFieldB);
     }
@@ -207,18 +187,14 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onUpdateMapping(index, updatedMapping);
   };
 
-  // Function to get a good display name based on field names
   const getDisplayName = (fieldA: string, fieldB: string): string => {
-    // If fields are identical, just use one
     if (fieldA.toLowerCase() === fieldB.toLowerCase()) {
       return toTitleCase(fieldA);
     }
     
-    // Return the shorter one or combine them
     return toTitleCase(fieldA.length <= fieldB.length ? fieldA : fieldB);
   };
 
-  // Helper function to convert to title case
   const toTitleCase = (str: string): string => {
     return str
       .replace(/([A-Z])/g, ' $1')
@@ -231,7 +207,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     <div className="space-y-6">
       <AnimatedTransition type="slide-up" delay={0.1}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Principal Data */}
           <Card className="border border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <Badge className="w-fit mb-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20">
@@ -278,7 +253,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
             )}
           </Card>
 
-          {/* Counterparty Data */}
           <Card className="border border-border/50 shadow-sm">
             <CardHeader className="pb-4">
               <Badge className="w-fit mb-2 bg-secondary text-secondary-foreground border-secondary/50 hover:bg-secondary/80">
@@ -390,7 +364,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
                               onClick={() => onSwapMappingFields(index)}
                               title="Swap fields"
                             >
-                              <SwapHorizontal className="w-4 h-4" />
+                              <ArrowLeftRight className="w-4 h-4" />
                             </Button>
                           </TableCell>
                           <TableCell className="py-2">
