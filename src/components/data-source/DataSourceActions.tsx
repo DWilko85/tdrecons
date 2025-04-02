@@ -37,7 +37,7 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
       
       if (!userId) {
         console.log("No user ID available for saving mappings");
-        return false; // Changed from true to match expected boolean return type
+        return false;
       }
       
       const mappingName = `${config.sourceA.name} to ${config.sourceB.name} mapping`;
@@ -59,14 +59,14 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
       
       if (error) {
         console.error("Error saving mappings:", error);
-        return false; // Changed from true to match expected boolean return type
+        return false;
       }
       
       console.log("Field mappings saved successfully");
       return true;
     } catch (err) {
       console.error("Error in saveMappingsToDatabase:", err);
-      return false; // Changed from true to match expected boolean return type
+      return false;
     }
   };
 

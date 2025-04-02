@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -89,6 +90,11 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id;
+      
+      if (!userId) {
+        console.log("No user ID available for saving mappings");
+        return false;
+      }
       
       const mappingData = {
         name: templateName,
