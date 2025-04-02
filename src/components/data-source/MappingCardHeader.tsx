@@ -1,14 +1,13 @@
 
 import React from "react";
 import { 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
+  CardHeader,
+  CardTitle,
+  CardDescription
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { FieldMapping } from "@/types/dataSources";
-import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
+import { Plus } from "lucide-react";
 
 interface MappingCardHeaderProps {
   mappings: FieldMapping[];
@@ -16,47 +15,36 @@ interface MappingCardHeaderProps {
     sourceAField: string;
     sourceBField: string;
   };
-  sourceAName: string | undefined;
-  sourceBName: string | undefined;
+  sourceAName?: string;
+  sourceBName?: string;
   onAddMapping: () => void;
-  onSaveTemplate: (name: string) => Promise<boolean>;
 }
 
 const MappingCardHeader: React.FC<MappingCardHeaderProps> = ({
   mappings,
   keyMapping,
-  sourceAName,
-  sourceBName,
+  sourceAName = "Source A",
+  sourceBName = "Source B",
   onAddMapping,
-  onSaveTemplate,
 }) => {
   return (
-    <CardHeader>
-      <div className="flex items-center justify-between">
-        <div>
-          <CardTitle className="text-xl">Field Mappings</CardTitle>
-          <CardDescription>
-            Configure which fields to compare between data sources
-          </CardDescription>
-        </div>
-        <div className="flex gap-2">
-          <SaveMappingTemplateDialog 
-            mappings={mappings}
-            keyMapping={keyMapping}
-            onSave={onSaveTemplate}
-            sourceAName={sourceAName}
-            sourceBName={sourceBName}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 gap-1"
-            onClick={onAddMapping}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Add Mapping
-          </Button>
-        </div>
+    <CardHeader className="pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+      <div>
+        <CardTitle className="text-lg font-medium">Field Mappings</CardTitle>
+        <CardDescription>
+          Map fields from {sourceAName} to {sourceBName}
+        </CardDescription>
+      </div>
+      <div className="flex mt-4 sm:mt-0">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="gap-1.5"
+          onClick={onAddMapping}
+        >
+          <Plus className="h-4 w-4" />
+          Add Field
+        </Button>
       </div>
     </CardHeader>
   );

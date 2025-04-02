@@ -22,7 +22,6 @@ interface FieldMappingsCardProps {
   onUpdateMapping: (index: number, mapping: FieldMapping) => void;
   onRemoveMapping: (index: number) => void;
   onSwapMappingFields: (index: number) => void;
-  onSaveTemplate: (name: string) => Promise<boolean>;
 }
 
 const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
@@ -34,7 +33,6 @@ const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
   onUpdateMapping,
   onRemoveMapping,
   onSwapMappingFields,
-  onSaveTemplate,
 }) => {
   return (
     <Card className="border border-border/50 shadow-sm">
@@ -44,7 +42,6 @@ const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
         sourceAName={sourceA?.name}
         sourceBName={sourceB?.name}
         onAddMapping={onAddMapping}
-        onSaveTemplate={onSaveTemplate}
       />
       <CardContent>
         <MappingsTable 

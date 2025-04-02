@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   DataSource, 
@@ -10,7 +11,7 @@ import { useMappings } from './useMappings';
 import { useSourceManagement } from './useSourceManagement';
 import { useReconciliation } from './useReconciliation';
 import { useFileUpload } from './useFileUpload';
-import { MappingTemplate } from '@/components/data-source/MappingTemplateSelector';
+import { MappingTemplate } from '@/services/templatesService';
 
 // Main hook that combines all data source functionality
 export function useDataSources() {
@@ -99,17 +100,17 @@ function useMappingTemplate(
   setConfig: React.Dispatch<React.SetStateAction<DataSourceConfig>>
 ) {
   return (template: MappingTemplate) => {
-    if (!template || !template.mapping) {
+    if (!template || !template.config) {
       console.error("Invalid template data");
       return;
     }
 
     try {
-      const { fields, keyMapping } = template.mapping;
+      const { mappings, keyMapping } = template.config;
       
       // Update mappings if available
-      if (Array.isArray(fields) && fields.length > 0) {
-        const formattedMappings: FieldMapping[] = fields.map(field => ({
+      if (Array.isArray(mappings) && mappings.length > 0) {
+        const formattedMappings: FieldMapping[] = mappings.map(field => ({
           sourceFieldA: field.sourceFieldA,
           sourceFieldB: field.sourceFieldB,
           displayName: field.displayName,

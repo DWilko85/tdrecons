@@ -1,11 +1,9 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/types/dataSources";
 import { FieldMapping } from "@/types/dataSources";
-import { MappingTemplate } from "./MappingTemplateSelector";
+import { MappingTemplate } from "@/services/templatesService";
 import AnimatedTransition from "../AnimatedTransition";
 import ConfigHeader from "./ConfigHeader";
 import SourceSections from "./SourceSections";
@@ -79,56 +77,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     setAutoReconcileOnUpload(checked);
   };
 
-  const saveMappingsAsTemplate = async (templateName: string): Promise<boolean> => {
-    if (!sourceA || !sourceB || mappings.length === 0) {
-      toast.error("Cannot save an empty template");
-      return false;
-    }
-
-    try {
-      setIsSavingMappings(true);
-      
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user.id;
-      
-      if (!userId) {
-        console.log("No user ID available for saving mappings");
-        return false;
-      }
-      
-      const mappingData = {
-        name: templateName,
-        file_a_id: sourceA.id,
-        file_b_id: sourceB.id,
-        user_id: userId,
-        mapping: JSON.stringify({
-          fields: mappings,
-          keyMapping: keyMapping
-        }) as unknown as Json
-      };
-      
-      const { error } = await supabase
-        .from('field_mappings')
-        .insert(mappingData);
-      
-      if (error) {
-        console.error("Error saving template:", error);
-        toast.error("Failed to save template");
-        return false;
-      }
-      
-      console.log("Mapping template saved successfully");
-      toast.success("Template saved successfully");
-      return true;
-    } catch (err) {
-      console.error("Error in saveMappingsAsTemplate:", err);
-      toast.error("Error saving template");
-      return false;
-    } finally {
-      setIsSavingMappings(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <ConfigHeader onSelectTemplate={handleSelectTemplate} />
@@ -159,7 +107,8 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           onUpdateKeyMapping={onUpdateKeyMapping}
           onAutoReconcileChange={handleAutoReconcileChange}
           onReconcile={onReconcile}
-          onSaveTemplate={saveMappingsAsTemplate}
+          sourceAId={sourceA.id}
+          sourceBId={sourceB.id}
         />
       )}
     </div>

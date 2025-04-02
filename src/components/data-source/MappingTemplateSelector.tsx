@@ -10,23 +10,10 @@ import {
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getTemplates, deleteTemplate, Template } from "@/services/templatesService";
 
-export interface MappingTemplate {
-  id: string;
-  name: string;
-  file_a_id?: string | null;
-  file_b_id?: string | null;
-  created_at: string;
-  mapping: {
-    fields: any[];
-    keyMapping: {
-      sourceAField: string;
-      sourceBField: string;
-    };
-  };
-}
+export interface MappingTemplate extends Template {}
 
 interface MappingTemplateSelectorProps {
   onSelectTemplate: (template: MappingTemplate | null) => void;
@@ -44,35 +31,11 @@ const MappingTemplateSelector: React.FC<MappingTemplateSelectorProps> = ({
   const loadTemplates = async () => {
     setLoading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user.id;
-      
-      const query = supabase
-        .from("field_mappings")
-        .select("*")
-        .order("created_at", { ascending: false });
-      
-      // Add user filter if logged in
-      const { data, error } = userId 
-        ? await query.eq("user_id", userId)
-        : await query;
-      
-      if (error) {
-        console.error("Error loading templates:", error);
-        toast.error("Failed to load mapping templates");
-        return;
-      }
-      
-      const mappingTemplates = data.map(item => ({
-        ...item,
-        mapping: typeof item.mapping === 'string' 
-          ? JSON.parse(item.mapping) 
-          : item.mapping
-      }));
-      
-      setTemplates(mappingTemplates);
+      const data = await getTemplates();
+      setTemplates(data);
     } catch (err) {
       console.error("Error in loadTemplates:", err);
+      toast.error("Failed to load templates");
     } finally {
       setLoading(false);
     }
@@ -84,13 +47,9 @@ const MappingTemplateSelector: React.FC<MappingTemplateSelectorProps> = ({
     if (!templateId) return;
     
     try {
-      const { error } = await supabase
-        .from("field_mappings")
-        .delete()
-        .eq("id", templateId);
+      const success = await deleteTemplate(templateId);
       
-      if (error) {
-        console.error("Error deleting template:", error);
+      if (!success) {
         toast.error("Failed to delete template");
         return;
       }
@@ -107,13 +66,14 @@ const MappingTemplateSelector: React.FC<MappingTemplateSelectorProps> = ({
       toast.success("Template deleted successfully");
     } catch (err) {
       console.error("Error in handleDelete:", err);
+      toast.error("Error deleting template");
     }
   };
 
   const handleSelectTemplate = (value: string) => {
     setSelectedTemplateId(value);
     
-    if (!value) {
+    if (!value || value === "none") {
       onSelectTemplate(null);
       return;
     }
@@ -160,7 +120,7 @@ const MappingTemplateSelector: React.FC<MappingTemplateSelectorProps> = ({
               <div className="flex-1 truncate">
                 {template.name}
                 <span className="ml-2 text-xs text-muted-foreground">
-                  ({template.mapping.fields.length} fields)
+                  ({template.config.mappings.length} fields)
                 </span>
               </div>
               <Button

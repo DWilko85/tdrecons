@@ -19,6 +19,8 @@ interface MappingFieldsSectionProps {
   canReconcile: boolean;
   isSavingMappings: boolean;
   autoReconcileOnUpload: boolean;
+  sourceAId?: string;
+  sourceBId?: string;
   onAddMapping: () => void;
   onUpdateMapping: (index: number, mapping: FieldMapping) => void;
   onRemoveMapping: (index: number) => void;
@@ -26,7 +28,6 @@ interface MappingFieldsSectionProps {
   onUpdateKeyMapping?: (sourceAField: string, sourceBField: string) => void;
   onAutoReconcileChange: (checked: boolean) => void;
   onReconcile: () => void;
-  onSaveTemplate: (name: string) => Promise<boolean>;
 }
 
 const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
@@ -37,6 +38,8 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   canReconcile,
   isSavingMappings,
   autoReconcileOnUpload,
+  sourceAId,
+  sourceBId,
   onAddMapping,
   onUpdateMapping,
   onRemoveMapping,
@@ -44,7 +47,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   onUpdateKeyMapping,
   onAutoReconcileChange,
   onReconcile,
-  onSaveTemplate,
 }) => {
   return (
     <div className="space-y-6">
@@ -72,7 +74,8 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
                 <SaveMappingTemplateDialog
                   mappings={mappings}
                   keyMapping={keyMapping}
-                  onSave={onSaveTemplate}
+                  sourceAId={sourceA?.id}
+                  sourceBId={sourceB?.id}
                   sourceAName={sourceA?.name}
                   sourceBName={sourceB?.name}
                 />
@@ -104,7 +107,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
         onUpdateMapping={onUpdateMapping}
         onRemoveMapping={onRemoveMapping}
         onSwapMappingFields={onSwapMappingFields}
-        onSaveTemplate={onSaveTemplate}
       />
     </div>
   );

@@ -12,9 +12,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Save } from "lucide-react";
 import { FieldMapping } from "@/types/dataSources";
 import { toast } from "sonner";
+import { saveTemplate } from "@/services/templatesService";
 
 interface SaveMappingTemplateDialogProps {
   mappings: FieldMapping[];
@@ -22,20 +24,25 @@ interface SaveMappingTemplateDialogProps {
     sourceAField: string;
     sourceBField: string;
   };
-  onSave: (name: string) => Promise<boolean>;
+  sourceAId?: string;
+  sourceBId?: string;
   sourceAName?: string;
   sourceBName?: string;
+  onSaveSuccess?: () => void;
 }
 
 const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
   mappings,
   keyMapping,
-  onSave,
+  sourceAId,
+  sourceBId,
   sourceAName = "Principal",
   sourceBName = "Counterparty",
+  onSaveSuccess,
 }) => {
   const [open, setOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
@@ -51,14 +58,22 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
 
     setIsSaving(true);
     try {
-      console.log("Saving template with name:", templateName);
-      const success = await onSave(templateName);
-      console.log("Template save result:", success);
+      const success = await saveTemplate(
+        templateName,
+        templateDescription || null,
+        { mappings, keyMapping },
+        sourceAId,
+        sourceBId
+      );
       
       if (success) {
         toast.success("Mapping template saved successfully");
         setOpen(false);
         setTemplateName("");
+        setTemplateDescription("");
+        if (onSaveSuccess) {
+          onSaveSuccess();
+        }
       } else {
         toast.error("Failed to save template. Please try again.");
       }
@@ -97,6 +112,17 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
               placeholder="Enter a descriptive name for this template"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="template-description">Description (Optional)</Label>
+            <Textarea
+              id="template-description"
+              placeholder="Add notes about this template"
+              value={templateDescription}
+              onChange={(e) => setTemplateDescription(e.target.value)}
+              rows={3}
+              className="resize-none"
             />
           </div>
           <div className="text-sm text-muted-foreground">
