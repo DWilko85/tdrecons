@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -78,7 +79,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     setAutoReconcileOnUpload(checked);
   };
 
-  const saveMappingsAsTemplate = async (templateName: string) => {
+  const saveMappingsAsTemplate = async (templateName: string): Promise<boolean> => {
     if (!sourceA || !sourceB || mappings.length === 0) {
       toast.error("Cannot save an empty template");
       return false;

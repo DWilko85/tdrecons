@@ -6,6 +6,7 @@ import { DataSourceConfig } from "@/hooks/useDataSources";
 import AutoReconcileToggle from "./AutoReconcileToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
+import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
 
 interface DataSourceActionsProps {
   config: DataSourceConfig;
@@ -36,7 +37,7 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
       const userId = sessionData.session?.user.id;
       
       if (!userId) {
-        console.log("No user ID available for saving mappings");
+        console.error("No user ID available for saving mappings");
         return false;
       }
       
@@ -87,6 +88,16 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
           onCheckedChange={onAutoReconcileChange}
         />
       </div>
+      
+      {config.sourceA && config.sourceB && (
+        <SaveMappingTemplateDialog
+          mappings={config.mappings}
+          keyMapping={config.keyMapping}
+          onSave={onSaveTemplate}
+          sourceAName={config.sourceA.name}
+          sourceBName={config.sourceB.name}
+        />
+      )}
       
       {canReconcile && (
         <Button

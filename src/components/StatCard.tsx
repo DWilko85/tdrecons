@@ -8,15 +8,27 @@ export interface StatCardProps {
   value: number;
   icon?: LucideIcon;
   className?: string;
+  percentage?: number;
+  label?: string; // Added for backward compatibility
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, className }) => {
+const StatCard: React.FC<StatCardProps> = ({ 
+  title, 
+  label, 
+  value, 
+  icon: Icon, 
+  className,
+  percentage 
+}) => {
+  // Use label as fallback for title (for backward compatibility)
+  const displayTitle = title || label || "";
+  
   return (
     <Card className={className}>
       <CardContent className="p-4">
         <div className="flex justify-between items-start">
           <div>
-            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-sm text-muted-foreground">{displayTitle}</p>
             <h3 className="text-2xl font-bold mt-1">{value}</h3>
           </div>
           {Icon && (
@@ -25,6 +37,11 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, className
             </div>
           )}
         </div>
+        {percentage !== undefined && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            {percentage}% of total
+          </div>
+        )}
       </CardContent>
     </Card>
   );

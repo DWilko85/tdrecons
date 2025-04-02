@@ -1,9 +1,12 @@
 
 import React from "react";
-import { DataSource, FieldMapping } from "@/hooks/useDataSources";
-import AnimatedTransition from "@/components/AnimatedTransition";
+import { DataSource, FieldMapping } from "@/types/dataSources";
 import FieldMappingsCard from "./FieldMappingsCard";
-import DataSourceActions from "./DataSourceActions";
+import KeyMappingCard from "./KeyMappingCard";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import AutoReconcileToggle from "./AutoReconcileToggle";
+import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
 
 interface MappingFieldsSectionProps {
   sourceA: DataSource | null;
@@ -20,6 +23,7 @@ interface MappingFieldsSectionProps {
   onUpdateMapping: (index: number, mapping: FieldMapping) => void;
   onRemoveMapping: (index: number) => void;
   onSwapMappingFields: (index: number) => void;
+  onUpdateKeyMapping?: (sourceAField: string, sourceBField: string) => void;
   onAutoReconcileChange: (checked: boolean) => void;
   onReconcile: () => void;
   onSaveTemplate: (name: string) => Promise<boolean>;
@@ -37,21 +41,58 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   onUpdateMapping,
   onRemoveMapping,
   onSwapMappingFields,
+  onUpdateKeyMapping,
   onAutoReconcileChange,
   onReconcile,
   onSaveTemplate,
 }) => {
-  if (!sourceA || !sourceB) return null;
-  
-  const config = {
-    sourceA,
-    sourceB,
-    mappings,
-    keyMapping
-  };
-
   return (
-    <AnimatedTransition type="slide-up" delay={0.2}>
+    <div className="space-y-6">
+      <div className="grid md:grid-cols-2 gap-6">
+        {onUpdateKeyMapping && (
+          <KeyMappingCard
+            sourceA={sourceA}
+            sourceB={sourceB}
+            keyMapping={keyMapping}
+            onUpdateKeyMapping={onUpdateKeyMapping}
+          />
+        )}
+        
+        <div className="flex flex-col gap-6">
+          <div>
+            <Card className="border border-border/50 shadow-sm">
+              <CardContent className="p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <AutoReconcileToggle
+                    checked={autoReconcileOnUpload}
+                    onCheckedChange={onAutoReconcileChange}
+                  />
+                </div>
+                
+                <SaveMappingTemplateDialog
+                  mappings={mappings}
+                  keyMapping={keyMapping}
+                  onSave={onSaveTemplate}
+                  sourceAName={sourceA?.name}
+                  sourceBName={sourceB?.name}
+                />
+                
+                {canReconcile && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    disabled={isSavingMappings}
+                    onClick={onReconcile}
+                  >
+                    Reconcile Data Sources
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+      
       <FieldMappingsCard
         sourceA={sourceA}
         sourceB={sourceB}
@@ -65,19 +106,7 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
         onSwapMappingFields={onSwapMappingFields}
         onSaveTemplate={onSaveTemplate}
       />
-      
-      <div className="mt-6">
-        <DataSourceActions
-          config={config}
-          canReconcile={canReconcile}
-          isSavingMappings={isSavingMappings}
-          autoReconcileOnUpload={autoReconcileOnUpload}
-          onAutoReconcileChange={onAutoReconcileChange}
-          onReconcile={onReconcile}
-          onSaveTemplate={onSaveTemplate}
-        />
-      </div>
-    </AnimatedTransition>
+    </div>
   );
 };
 

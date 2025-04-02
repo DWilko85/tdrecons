@@ -79,7 +79,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     setAutoReconcileOnUpload(checked);
   };
 
-  const saveMappingsAsTemplate = async (templateName: string) => {
+  const saveMappingsAsTemplate = async (templateName: string): Promise<boolean> => {
     if (!sourceA || !sourceB || mappings.length === 0) {
       toast.error("Cannot save an empty template");
       return false;
@@ -118,6 +118,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       }
       
       console.log("Mapping template saved successfully");
+      toast.success("Template saved successfully");
       return true;
     } catch (err) {
       console.error("Error in saveMappingsAsTemplate:", err);
@@ -128,7 +129,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
-  const saveMappingsToDatabase = async () => {
+  const saveMappingsToDatabase = async (): Promise<boolean> => {
     if (!sourceA || !sourceB || mappings.length === 0) {
       return false;
     }

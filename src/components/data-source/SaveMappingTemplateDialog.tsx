@@ -51,11 +51,16 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
 
     setIsSaving(true);
     try {
+      console.log("Saving template with name:", templateName);
       const success = await onSave(templateName);
+      console.log("Template save result:", success);
+      
       if (success) {
         toast.success("Mapping template saved successfully");
         setOpen(false);
         setTemplateName("");
+      } else {
+        toast.error("Failed to save template. Please try again.");
       }
     } catch (error) {
       console.error("Error saving template:", error);
@@ -65,20 +70,16 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
     }
   };
 
-  if (mappings.length === 0) {
-    return null;
-  }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="gap-1.5" 
-          size="sm"
+          className="gap-1.5 w-full" 
+          size="lg"
         >
-          <Save className="h-3.5 w-3.5" />
-          Save Template
+          <Save className="h-4 w-4" />
+          Save as Template
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
