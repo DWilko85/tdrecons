@@ -213,6 +213,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           onUpdateMapping={onUpdateMapping}
           onRemoveMapping={onRemoveMapping}
           onSwapMappingFields={onSwapMappingFields}
+          onUpdateKeyMapping={onUpdateKeyMapping}
           onAutoReconcileChange={handleAutoReconcileChange}
           onReconcile={handleReconcile}
           onSaveTemplate={saveMappingsAsTemplate}
