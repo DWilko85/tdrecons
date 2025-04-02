@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import {
   Table,
@@ -31,7 +30,7 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
-import { LoadingState } from "./reconciliation/LoadingState";
+import LoadingState from "./reconciliation/LoadingState";
 
 interface ReconciliationTableProps {
   results: ReconciliationResult[];

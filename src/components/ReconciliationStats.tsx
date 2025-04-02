@@ -22,31 +22,31 @@ const ReconciliationStats: React.FC<ReconciliationStatsProps> = ({ results }) =>
         <StatCard
           title="Total Records"
           value={totalRecords}
-          icon={(props) => <AlertCircle {...props} />}
+          icon={AlertCircle}
           className="border-border/50"
         />
         <StatCard
           title="Matching Records"
           value={matchingRecords}
-          icon={(props) => <CircleCheck {...props} />}
+          icon={CircleCheck}
           className="border-green-500/40 bg-green-500/5 text-green-500"
         />
         <StatCard
           title="Different Records"
           value={differentRecords}
-          icon={(props) => <CircleX {...props} />}
+          icon={CircleX}
           className="border-yellow-500/40 bg-yellow-500/5 text-yellow-500"
         />
         <StatCard
           title="Missing in Principal"
           value={missingB}
-          icon={(props) => <ArrowDown {...props} />}
+          icon={ArrowDown}
           className="border-red-500/40 bg-red-500/5 text-red-500"
         />
         <StatCard
           title="Missing in Counterparty"
           value={missingA}
-          icon={(props) => <ArrowUp {...props} />}
+          icon={ArrowUp}
           className="border-red-500/40 bg-red-500/5 text-red-500"
         />
       </div>

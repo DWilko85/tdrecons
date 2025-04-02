@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -136,7 +135,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       
       if (!userId) {
         console.log("No user ID available for saving mappings");
-        return true;
+        return false;
       }
       
       const mappingName = `${sourceA.name} to ${sourceB.name} mapping`;
@@ -158,14 +157,14 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       
       if (error) {
         console.error("Error saving mappings:", error);
-        return true;
+        return false;
       }
       
       console.log("Field mappings saved successfully");
       return true;
     } catch (err) {
       console.error("Error in saveMappingsToDatabase:", err);
-      return true;
+      return false;
     } finally {
       setIsSavingMappings(false);
     }
