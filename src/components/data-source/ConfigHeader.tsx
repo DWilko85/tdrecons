@@ -1,10 +1,11 @@
 
 import React from "react";
 import AnimatedTransition from "@/components/AnimatedTransition";
-import MappingTemplateSelector, { MappingTemplate } from "./MappingTemplateSelector";
+import MappingTemplateSelector from "./MappingTemplateSelector";
+import { Template } from "@/services/templatesService";
 
 interface ConfigHeaderProps {
-  onSelectTemplate: (template: MappingTemplate | null) => void;
+  onSelectTemplate: (template: Template | null) => void;
 }
 
 const ConfigHeader: React.FC<ConfigHeaderProps> = ({ onSelectTemplate }) => {

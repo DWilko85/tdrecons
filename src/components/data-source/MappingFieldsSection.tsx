@@ -28,6 +28,7 @@ interface MappingFieldsSectionProps {
   onUpdateKeyMapping?: (sourceAField: string, sourceBField: string) => void;
   onAutoReconcileChange: (checked: boolean) => void;
   onReconcile: () => void;
+  onSaveTemplate?: (templateName: string) => Promise<boolean>;
 }
 
 const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
@@ -47,6 +48,7 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   onUpdateKeyMapping,
   onAutoReconcileChange,
   onReconcile,
+  onSaveTemplate,
 }) => {
   return (
     <div className="space-y-6">
@@ -78,6 +80,7 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
                   sourceBId={sourceB?.id}
                   sourceAName={sourceA?.name}
                   sourceBName={sourceB?.name}
+                  onSaveTemplate={onSaveTemplate}
                 />
                 
                 {canReconcile && (

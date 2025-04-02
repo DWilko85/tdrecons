@@ -13,10 +13,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getTemplates, deleteTemplate, Template } from "@/services/templatesService";
 
-export interface MappingTemplate extends Template {}
-
 interface MappingTemplateSelectorProps {
-  onSelectTemplate: (template: MappingTemplate | null) => void;
+  onSelectTemplate: (template: Template | null) => void;
   className?: string;
 }
 
@@ -24,7 +22,7 @@ const MappingTemplateSelector: React.FC<MappingTemplateSelectorProps> = ({
   onSelectTemplate,
   className,
 }) => {
-  const [templates, setTemplates] = useState<MappingTemplate[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [loading, setLoading] = useState(true);
 

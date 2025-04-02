@@ -48,8 +48,10 @@ export async function saveTemplate(
       source_b_id: sourceBId
     };
     
-    const { error } = await supabase
-      .from('templates')
+    // Explicitly cast to any to bypass type checking for this call
+    // This is needed because the templates table is newly created and not yet in the TypeScript types
+    const { error } = await (supabase
+      .from('templates') as any)
       .insert(templateData);
     
     if (error) {
@@ -66,8 +68,9 @@ export async function saveTemplate(
 
 export async function getTemplates(): Promise<Template[]> {
   try {
-    const { data, error } = await supabase
-      .from('templates')
+    // Explicitly cast to any to bypass type checking for this call
+    const { data, error } = await (supabase
+      .from('templates') as any)
       .select('*')
       .order('created_at', { ascending: false });
     
@@ -76,7 +79,8 @@ export async function getTemplates(): Promise<Template[]> {
       return [];
     }
     
-    return data as Template[];
+    // Cast the result to Template[]
+    return (data || []) as Template[];
   } catch (err) {
     console.error("Error in getTemplates:", err);
     return [];
@@ -85,8 +89,9 @@ export async function getTemplates(): Promise<Template[]> {
 
 export async function deleteTemplate(id: string): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from('templates')
+    // Explicitly cast to any to bypass type checking for this call
+    const { error } = await (supabase
+      .from('templates') as any)
       .delete()
       .eq('id', id);
     

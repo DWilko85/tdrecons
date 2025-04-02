@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/types/dataSources";
 import { FieldMapping } from "@/types/dataSources";
-import { MappingTemplate } from "@/services/templatesService";
+import { Template } from "@/services/templatesService";
 import AnimatedTransition from "../AnimatedTransition";
 import ConfigHeader from "./ConfigHeader";
 import SourceSections from "./SourceSections";
@@ -21,7 +21,7 @@ interface DataSourceConfigProps {
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
   onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | null | undefined;
-  onApplyMappingTemplate: (template: MappingTemplate) => void;
+  onApplyMappingTemplate: (template: Template) => void;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
@@ -66,7 +66,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onAddMapping();
   };
 
-  const handleSelectTemplate = (template: MappingTemplate | null) => {
+  const handleSelectTemplate = (template: Template | null) => {
     if (template) {
       console.log("Selected template:", template);
       onApplyMappingTemplate(template);
@@ -75,6 +75,49 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
 
   const handleAutoReconcileChange = (checked: boolean) => {
     setAutoReconcileOnUpload(checked);
+  };
+
+  const saveMappingsAsTemplate = async (templateName: string): Promise<boolean> => {
+    if (!sourceA || !sourceB || mappings.length === 0) {
+      toast.error("Cannot save an empty template");
+      return false;
+    }
+
+    try {
+      setIsSavingMappings(true);
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      
+      if (!userId) {
+        console.log("No user ID available for saving mappings");
+        return false;
+      }
+      
+      // Use the imported saveTemplate function here
+      const success = await saveTemplate(
+        templateName,
+        null, // No description from this method
+        { mappings, keyMapping },
+        sourceA.id,
+        sourceB.id
+      );
+      
+      if (success) {
+        console.log("Mapping template saved successfully");
+        toast.success("Template saved successfully");
+        return true;
+      } else {
+        toast.error("Failed to save template");
+        return false;
+      }
+    } catch (err) {
+      console.error("Error in saveMappingsAsTemplate:", err);
+      toast.error("Error saving template");
+      return false;
+    } finally {
+      setIsSavingMappings(false);
+    }
   };
 
   return (
@@ -107,8 +150,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           onUpdateKeyMapping={onUpdateKeyMapping}
           onAutoReconcileChange={handleAutoReconcileChange}
           onReconcile={onReconcile}
-          sourceAId={sourceA.id}
-          sourceBId={sourceB.id}
+          onSaveTemplate={saveMappingsAsTemplate}
         />
       )}
     </div>

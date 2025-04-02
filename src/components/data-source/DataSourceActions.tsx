@@ -98,7 +98,7 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
         <SaveMappingTemplateDialog
           mappings={config.mappings}
           keyMapping={config.keyMapping}
-          onSave={onSaveTemplate}
+          onSaveTemplate={onSaveTemplate}
           sourceAName={config.sourceA.name}
           sourceBName={config.sourceB.name}
         />

@@ -7,7 +7,7 @@ import { useDataSources } from "@/hooks/useDataSources";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MappingTemplate } from "@/components/data-source/MappingTemplateSelector";
+import { Template } from "@/services/templatesService";
 
 const Configure = () => {
   const navigate = useNavigate();
@@ -71,7 +71,7 @@ const Configure = () => {
     navigate("/reconcile", { state: { runReconciliation: true } });
   };
 
-  const handleApplyMappingTemplate = (template: MappingTemplate) => {
+  const handleApplyMappingTemplate = (template: Template) => {
     applyMappingTemplate(template);
     toast.success(`Applied mapping template: ${template.name}`);
   };

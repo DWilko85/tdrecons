@@ -11,7 +11,9 @@ import { useMappings } from './useMappings';
 import { useSourceManagement } from './useSourceManagement';
 import { useReconciliation } from './useReconciliation';
 import { useFileUpload } from './useFileUpload';
-import { MappingTemplate } from '@/services/templatesService';
+import { Template } from '@/services/templatesService';
+import { supabase } from "@/integrations/supabase/client";
+import { saveTemplate } from '@/services/templatesService';
 
 // Main hook that combines all data source functionality
 export function useDataSources() {
@@ -99,7 +101,7 @@ function useMappingTemplate(
   config: DataSourceConfig, 
   setConfig: React.Dispatch<React.SetStateAction<DataSourceConfig>>
 ) {
-  return (template: MappingTemplate) => {
+  return (template: Template) => {
     if (!template || !template.config) {
       console.error("Invalid template data");
       return;

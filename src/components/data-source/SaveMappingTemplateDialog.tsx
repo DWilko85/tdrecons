@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,7 @@ interface SaveMappingTemplateDialogProps {
   sourceBId?: string;
   sourceAName?: string;
   sourceBName?: string;
-  onSaveSuccess?: () => void;
+  onSaveTemplate?: (templateName: string) => Promise<boolean>;
 }
 
 const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
@@ -38,7 +37,7 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
   sourceBId,
   sourceAName = "Principal",
   sourceBName = "Counterparty",
-  onSaveSuccess,
+  onSaveTemplate,
 }) => {
   const [open, setOpen] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -58,6 +57,21 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
 
     setIsSaving(true);
     try {
+      // If onSaveTemplate is provided, use it
+      if (onSaveTemplate) {
+        const success = await onSaveTemplate(templateName);
+        if (success) {
+          toast.success("Mapping template saved successfully");
+          setOpen(false);
+          setTemplateName("");
+          setTemplateDescription("");
+        } else {
+          toast.error("Failed to save template. Please try again.");
+        }
+        return;
+      }
+      
+      // Otherwise use the direct saveTemplate function
       const success = await saveTemplate(
         templateName,
         templateDescription || null,
@@ -71,9 +85,6 @@ const SaveMappingTemplateDialog: React.FC<SaveMappingTemplateDialogProps> = ({
         setOpen(false);
         setTemplateName("");
         setTemplateDescription("");
-        if (onSaveSuccess) {
-          onSaveSuccess();
-        }
       } else {
         toast.error("Failed to save template. Please try again.");
       }
