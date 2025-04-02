@@ -11,9 +11,8 @@ import { useMappings } from './useMappings';
 import { useSourceManagement } from './useSourceManagement';
 import { useReconciliation } from './useReconciliation';
 import { useFileUpload } from './useFileUpload';
-import { Template } from '@/services/templatesService';
+import { Template, saveTemplate } from '@/services/templatesService';
 import { supabase } from "@/integrations/supabase/client";
-import { saveTemplate } from '@/services/templatesService';
 
 // Main hook that combines all data source functionality
 export function useDataSources() {

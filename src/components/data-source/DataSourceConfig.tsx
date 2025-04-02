@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/types/dataSources";
 import { FieldMapping } from "@/types/dataSources";
 import { Template } from "@/services/templatesService";
+import { supabase } from "@/integrations/supabase/client";
+import { saveTemplate } from "@/services/templatesService";
 import AnimatedTransition from "../AnimatedTransition";
 import ConfigHeader from "./ConfigHeader";
 import SourceSections from "./SourceSections";
