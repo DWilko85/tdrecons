@@ -2,24 +2,23 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import StatCard from "@/components/StatCard";
 import ReconciliationTable from "@/components/ReconciliationTable";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReconciliationHistory } from "@/types/reconciliation";
-import { formatDateTime } from "@/lib/date-utils";
 import AnimatedTransition from "@/components/AnimatedTransition";
-import { ArrowLeft, Calendar, Database } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, AlertTriangle, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import StatCard from "@/components/StatCard";
+import { formatDistanceToNow } from "date-fns";
 
 const HistoryDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const [reconciliation, setReconciliation] = useState<ReconciliationHistory | null>(null);
+  const { id } = useParams();
+  const [history, setHistory] = useState<ReconciliationHistory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchReconciliation = async () => {
+    const fetchHistoryDetail = async () => {
       if (!id) return;
 
       try {
@@ -41,189 +40,132 @@ const HistoryDetail = () => {
             results: Array.isArray(data.results) ? data.results : JSON.parse(JSON.stringify(data.results))
           };
           
-          // Cast the data to ReconciliationHistory since we've confirmed the table now exists
-          setReconciliation(parsedData as unknown as ReconciliationHistory);
+          setHistory(parsedData as ReconciliationHistory);
         }
       } catch (error) {
-        console.error("Error fetching reconciliation:", error);
+        console.error("Error fetching history detail:", error);
         toast.error("Failed to load reconciliation details");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchReconciliation();
+    fetchHistoryDetail();
   }, [id]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen">
         <Navbar />
-        <section className="pt-28 pb-8">
-          <div className="container max-w-6xl text-center">
-            <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <h2 className="text-xl font-medium mb-2">Loading Reconciliation Details</h2>
-            <p className="text-muted-foreground">Fetching data, please wait...</p>
+        <div className="container max-w-6xl pt-28">
+          <div className="text-center py-20">
+            <Database className="h-10 w-10 animate-pulse text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-medium mb-2">Loading History Details</h2>
+            <p className="text-muted-foreground">Fetching reconciliation data...</p>
           </div>
-        </section>
+        </div>
       </div>
     );
   }
 
-  if (!reconciliation) {
+  if (!history) {
     return (
       <div className="min-h-screen">
         <Navbar />
-        <section className="pt-28 pb-8">
-          <div className="container max-w-6xl text-center">
-            <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+        <div className="container max-w-6xl pt-28">
+          <div className="text-center py-20">
+            <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
             <h2 className="text-xl font-medium mb-2">Reconciliation Not Found</h2>
-            <p className="text-muted-foreground">The requested reconciliation could not be found.</p>
-            <Button asChild className="mt-4">
+            <p className="text-muted-foreground mb-6">The reconciliation record you're looking for doesn't exist</p>
+            <Button asChild>
               <Link to="/history">Back to History</Link>
             </Button>
           </div>
-        </section>
+        </div>
       </div>
     );
   }
+
+  const timeAgo = formatDistanceToNow(new Date(history.created_at), { addSuffix: true });
+  const isPerfectMatch = history.different_records === 0 && 
+    history.missing_a_records === 0 && 
+    history.missing_b_records === 0;
 
   return (
     <div className="min-h-screen pb-16">
       <Navbar />
-
-      {/* Header */}
+      
       <section className="pt-28 pb-8">
         <div className="container max-w-6xl">
-          <AnimatedTransition type="slide-down" delay={0.1}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 gap-1 text-muted-foreground hover:text-foreground"
-                    asChild
-                  >
-                    <Link to="/history">
-                      <ArrowLeft className="h-3.5 w-3.5" />
-                      <span>Back to History</span>
-                    </Link>
-                  </Button>
-                </div>
-                <h1 className="text-3xl font-bold">{reconciliation.name}</h1>
+          <div className="flex flex-col space-y-2 md:flex-row md:justify-between md:items-center md:space-y-0 mb-8">
+            <div>
+              <Link 
+                to="/history" 
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Back to History
+              </Link>
+              <h1 className="text-2xl md:text-3xl font-bold">{history.name}</h1>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-muted-foreground">
+                  {history.source_a_name} ↔ {history.source_b_name}
+                </p>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {timeAgo}
+                </span>
               </div>
-            </div>
-          </AnimatedTransition>
-
-          <div className="flex items-center gap-3 mb-6">
-            <Badge variant="secondary" className="gap-1.5">
-              <Calendar className="h-3.5 w-3.5" />
-              {formatDateTime(new Date(reconciliation.created_at))}
-            </Badge>
-          </div>
-
-          <AnimatedTransition type="slide-up" delay={0.2}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
-              <StatCard
-                label="Total Records"
-                value={reconciliation.total_records}
-                icon={<Database className="h-4 w-4" />}
-              />
-              <StatCard
-                label="Matching"
-                value={reconciliation.matching_records}
-                icon={<CheckCircle className="h-4 w-4 text-matching" />}
-                percentage={reconciliation.total_records ? Math.round((reconciliation.matching_records / reconciliation.total_records) * 100) : 0}
-              />
-              <StatCard
-                label="Different"
-                value={reconciliation.different_records}
-                icon={<XCircle className="h-4 w-4 text-removed" />}
-                percentage={reconciliation.total_records ? Math.round((reconciliation.different_records / reconciliation.total_records) * 100) : 0}
-              />
-              <StatCard
-                label="Missing in Principal"
-                value={reconciliation.missing_a_records}
-                percentage={reconciliation.total_records ? Math.round((reconciliation.missing_a_records / reconciliation.total_records) * 100) : 0}
-              />
-              <StatCard
-                label="Missing in Counterparty"
-                value={reconciliation.missing_b_records}
-                percentage={reconciliation.total_records ? Math.round((reconciliation.missing_b_records / reconciliation.total_records) * 100) : 0}
-              />
-            </div>
-          </AnimatedTransition>
-
-          <AnimatedTransition type="fade" delay={0.3}>
-            <div className="flex flex-col sm:flex-row items-start gap-4 mb-10 text-sm">
-              <div className="border rounded-md p-3 flex-1">
-                <div className="text-muted-foreground mb-2">Principal</div>
-                <div className="font-medium">{reconciliation.source_a_name}</div>
-              </div>
-              <div className="border rounded-md p-3 flex-1">
-                <div className="text-muted-foreground mb-2">Counterparty</div>
-                <div className="font-medium">{reconciliation.source_b_name}</div>
-              </div>
-              {reconciliation.description && (
-                <div className="border rounded-md p-3 flex-1">
-                  <div className="text-muted-foreground mb-2">Description</div>
-                  <div className="font-medium">{reconciliation.description}</div>
-                </div>
+              {history.description && (
+                <p className="mt-2 text-muted-foreground">{history.description}</p>
               )}
             </div>
-          </AnimatedTransition>
-        </div>
-      </section>
-
-      {/* Results Table */}
-      <section>
-        <div className="container max-w-6xl">
-          <AnimatedTransition type="fade" delay={0.4}>
-            <ReconciliationTable
-              results={reconciliation.results}
-              isLoading={isLoading}
-              isHistoryView={true}
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            <StatCard
+              title="Total Records"
+              value={history.total_records}
+              icon={Database}
+              className="sm:col-span-2 lg:col-span-1"
             />
-          </AnimatedTransition>
+            <StatCard
+              title="Matching"
+              value={history.matching_records}
+              percentage={Math.round((history.matching_records / history.total_records) * 100) || 0}
+              icon={CheckCircle}
+              className={isPerfectMatch ? "border-green-500 border-2" : ""}
+            />
+            <StatCard
+              title="Different"
+              value={history.different_records}
+              percentage={Math.round((history.different_records / history.total_records) * 100) || 0}
+              icon={XCircle}
+            />
+            <StatCard
+              title="Missing in Principal"
+              value={history.missing_a_records}
+              percentage={Math.round((history.missing_a_records / history.total_records) * 100) || 0}
+              icon={AlertTriangle}
+            />
+            <StatCard
+              title="Missing in Counterparty"
+              value={history.missing_b_records}
+              percentage={Math.round((history.missing_b_records / history.total_records) * 100) || 0}
+              icon={AlertTriangle}
+            />
+          </div>
+          
+          <div className="border rounded-lg p-4 bg-card mb-8">
+            <h2 className="text-xl font-semibold mb-4">Reconciliation Results</h2>
+            <ReconciliationTable 
+              results={history.results}
+              isLoading={false}
+            />
+          </div>
         </div>
       </section>
     </div>
   );
 };
-
-// UI components for icons
-const CheckCircle = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-    <path d="M16.83 7.17L9.17 14.83l-2.83-2.83" />
-  </svg>
-);
-
-const XCircle = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-    <path d="M15 9l-6 6" />
-    <path d="M9 9l6 6" />
-  </svg>
-);
 
 export default HistoryDetail;

@@ -73,8 +73,13 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
 
   const handleReconcile = async () => {
     if (canReconcile) {
-      await saveMappingsToDatabase();
-      onReconcile();
+      const success = await saveMappingsToDatabase();
+      if (success) {
+        onReconcile();
+      } else {
+        console.log("Failed to save mappings but continuing with reconciliation");
+        onReconcile();
+      }
     } else {
       toast.error("Please complete the configuration before reconciling");
     }
