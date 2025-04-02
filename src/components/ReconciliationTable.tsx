@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import {
   Table,
@@ -18,7 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { ReconciliationResult } from "@/hooks/useDataSources";
+import { ReconciliationResult } from "@/types/dataSources";
 import {
   AlertCircle,
   ArrowDown,
@@ -30,12 +31,19 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
+import { LoadingState } from "./reconciliation/LoadingState";
 
 interface ReconciliationTableProps {
   results: ReconciliationResult[];
+  isLoading?: boolean;
+  isHistoryView?: boolean;
 }
 
-const ReconciliationTable: React.FC<ReconciliationTableProps> = ({ results }) => {
+const ReconciliationTable: React.FC<ReconciliationTableProps> = ({ 
+  results,
+  isLoading = false,
+  isHistoryView = false
+}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<
     "all" | "matching" | "different" | "missing-a" | "missing-b"
@@ -58,6 +66,10 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({ results }) =>
 
     return filtered;
   }, [results, searchQuery, filterStatus]);
+
+  if (isLoading) {
+    return <LoadingState />;
+  }
 
   if (results.length === 0) {
     return (

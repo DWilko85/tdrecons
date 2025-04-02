@@ -2,17 +2,11 @@
 import React from "react";
 import { 
   Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
+  CardContent
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { DataSource, FieldMapping } from "@/hooks/useDataSources";
+import { DataSource, FieldMapping } from "@/types/dataSources";
 import MappingsTable from "./MappingsTable";
-import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
+import MappingCardHeader from "./MappingCardHeader";
 
 interface FieldMappingsCardProps {
   sourceA: DataSource | null;
@@ -36,8 +30,6 @@ const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
   sourceB,
   mappings,
   keyMapping,
-  canReconcile,
-  isSavingMappings,
   onAddMapping,
   onUpdateMapping,
   onRemoveMapping,
@@ -46,34 +38,14 @@ const FieldMappingsCard: React.FC<FieldMappingsCardProps> = ({
 }) => {
   return (
     <Card className="border border-border/50 shadow-sm">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl">Field Mappings</CardTitle>
-            <CardDescription>
-              Configure which fields to compare between data sources
-            </CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <SaveMappingTemplateDialog 
-              mappings={mappings}
-              keyMapping={keyMapping}
-              onSave={onSaveTemplate}
-              sourceAName={sourceA?.name}
-              sourceBName={sourceB?.name}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 gap-1"
-              onClick={onAddMapping}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add Mapping
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
+      <MappingCardHeader
+        mappings={mappings}
+        keyMapping={keyMapping}
+        sourceAName={sourceA?.name}
+        sourceBName={sourceB?.name}
+        onAddMapping={onAddMapping}
+        onSaveTemplate={onSaveTemplate}
+      />
       <CardContent>
         <MappingsTable 
           mappings={mappings}

@@ -1,8 +1,9 @@
+
 import React from "react";
 import StatCard from "./StatCard";
 import { ArrowDown, ArrowUp, CircleCheck, CircleX, AlertCircle } from "lucide-react";
 import AnimatedTransition from "./AnimatedTransition";
-import { ReconciliationResult } from "@/hooks/useDataSources";
+import { ReconciliationResult } from "@/types/dataSources";
 
 interface ReconciliationStatsProps {
   results: ReconciliationResult[];
@@ -21,31 +22,31 @@ const ReconciliationStats: React.FC<ReconciliationStatsProps> = ({ results }) =>
         <StatCard
           title="Total Records"
           value={totalRecords}
-          icon={AlertCircle}
+          icon={(props) => <AlertCircle {...props} />}
           className="border-border/50"
         />
         <StatCard
           title="Matching Records"
           value={matchingRecords}
-          icon={CircleCheck}
+          icon={(props) => <CircleCheck {...props} />}
           className="border-green-500/40 bg-green-500/5 text-green-500"
         />
         <StatCard
           title="Different Records"
           value={differentRecords}
-          icon={CircleX}
+          icon={(props) => <CircleX {...props} />}
           className="border-yellow-500/40 bg-yellow-500/5 text-yellow-500"
         />
         <StatCard
           title="Missing in Principal"
           value={missingB}
-          icon={ArrowDown}
+          icon={(props) => <ArrowDown {...props} />}
           className="border-red-500/40 bg-red-500/5 text-red-500"
         />
         <StatCard
           title="Missing in Counterparty"
           value={missingA}
-          icon={ArrowUp}
+          icon={(props) => <ArrowUp {...props} />}
           className="border-red-500/40 bg-red-500/5 text-red-500"
         />
       </div>

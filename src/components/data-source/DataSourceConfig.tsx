@@ -1,14 +1,15 @@
 
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/hooks/useDataSources";
+import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
+import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/types/dataSources";
 import { FieldMapping } from "@/types/dataSources";
 import { MappingTemplate } from "./MappingTemplateSelector";
 import AnimatedTransition from "../AnimatedTransition";
 import ConfigHeader from "./ConfigHeader";
 import SourceSections from "./SourceSections";
 import MappingFieldsSection from "./MappingFieldsSection";
-import DataSourceActions from "./DataSourceActions";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -87,7 +88,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     try {
       setIsSavingMappings(true);
       
-      // Template saving logic is handled in the MappingFieldsSection component
       const { data: sessionData } = await supabase.auth.getSession();
       const userId = sessionData.session?.user.id;
       
