@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -16,28 +17,38 @@ const History = () => {
   const fetchHistory = async () => {
     try {
       setIsLoading(true);
+      console.log("Fetching reconciliation history...");
+      
       const { data, error } = await supabase
         .from('reconciliation_history')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
+        console.error("Error fetching history:", error);
         throw error;
       }
 
       if (data) {
+        console.log("Fetched history data:", data.length, "records");
+        
         // Ensure results are properly parsed
         const parsedData = data.map(item => ({
           ...item,
-          results: Array.isArray(item.results) ? item.results : JSON.parse(JSON.stringify(item.results))
+          results: Array.isArray(item.results) ? item.results : 
+                   (typeof item.results === 'string' ? JSON.parse(item.results) : item.results)
         }));
         
-        // Cast the data to ReconciliationHistory[] since we've confirmed the table now exists
+        // Cast the data to ReconciliationHistory[]
         setHistory(parsedData as unknown as ReconciliationHistory[]);
+      } else {
+        console.log("No history data found");
+        setHistory([]);
       }
     } catch (error) {
       console.error("Error fetching history:", error);
       toast.error("Failed to load reconciliation history");
+      setHistory([]);
     } finally {
       setIsLoading(false);
     }

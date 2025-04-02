@@ -12,7 +12,7 @@ export interface HistoryListProps {
 }
 
 const HistoryList: React.FC<HistoryListProps> = ({ items }) => {
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <div className="text-center py-20">
         <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
@@ -32,7 +32,7 @@ const HistoryList: React.FC<HistoryListProps> = ({ items }) => {
     <div className="space-y-4">
       {items.map((item) => {
         const date = new Date(item.created_at);
-        const matchingRate = Math.round((item.matching_records / item.total_records) * 100);
+        const matchingRate = Math.round((item.matching_records / item.total_records) * 100) || 0;
         const differenceRate = 100 - matchingRate;
 
         return (

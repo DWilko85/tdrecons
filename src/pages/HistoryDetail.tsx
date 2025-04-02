@@ -23,6 +23,8 @@ const HistoryDetail = () => {
 
       try {
         setIsLoading(true);
+        console.log("Fetching history detail for ID:", id);
+        
         const { data, error } = await supabase
           .from('reconciliation_history')
           .select('*')
@@ -30,14 +32,18 @@ const HistoryDetail = () => {
           .single();
 
         if (error) {
+          console.error("Error fetching history detail:", error);
           throw error;
         }
 
         if (data) {
+          console.log("Fetched history detail:", data);
+          
           // Ensure results are properly parsed
           const parsedData = {
             ...data,
-            results: Array.isArray(data.results) ? data.results : JSON.parse(JSON.stringify(data.results))
+            results: Array.isArray(data.results) ? data.results : 
+                     (typeof data.results === 'string' ? JSON.parse(data.results) : data.results)
           };
           
           setHistory(parsedData as ReconciliationHistory);
@@ -157,10 +163,18 @@ const HistoryDetail = () => {
           
           <div className="border rounded-lg p-4 bg-card mb-8">
             <h2 className="text-xl font-semibold mb-4">Reconciliation Results</h2>
-            <ReconciliationTable 
-              results={history.results}
-              isLoading={false}
-            />
+            {Array.isArray(history.results) && history.results.length > 0 ? (
+              <ReconciliationTable 
+                results={history.results}
+                isLoading={false}
+                isHistoryView={true}
+              />
+            ) : (
+              <div className="text-center py-10">
+                <AlertTriangle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
+                <p className="text-muted-foreground">No detailed results available for this reconciliation</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -14,7 +15,6 @@ import AnimatedTransition from "@/components/AnimatedTransition";
 import { useDataSources } from "@/hooks/useDataSources";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 
 const Reconcile = () => {
   const navigate = useNavigate();
@@ -29,7 +29,6 @@ const Reconcile = () => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-  const [runReconciliation, setRunReconciliation] = useState(true);
 
   useEffect(() => {
     console.log("Reconcile page state:", { 
@@ -91,7 +90,6 @@ const Reconcile = () => {
     }
     
     reconcile();
-    setRunReconciliation(false);
   };
 
   const saveReconciliation = async (name: string, description: string) => {
@@ -110,6 +108,7 @@ const Reconcile = () => {
         return;
       }
 
+      // Convert results to a JSON-compatible format
       const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
 
       console.log("Saving reconciliation with", reconciliationResults.length, "records");
