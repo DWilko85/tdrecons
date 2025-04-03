@@ -57,7 +57,7 @@ export function useDataSources() {
   
   const {
     addFileSourceAndReconcile
-  } = useFileUpload(config, addUploadedFileSource, setSourceA, setSourceB, generateMappings, performAutoReconcile);
+  } = useFileUpload(config, addUploadedFileSource, setSourceA, setSourceB, generateMappings);
 
   // Load data sources from database on initial load
   useEffect(() => {

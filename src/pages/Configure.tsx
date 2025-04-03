@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import DataSourceConfig from "@/components/data-source/DataSourceConfig";
+import DataSourceConfig from "@/components/DataSourceConfig";
 import { useDataSources } from "@/hooks/useDataSources";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import { supabase } from "@/integrations/supabase/client";
