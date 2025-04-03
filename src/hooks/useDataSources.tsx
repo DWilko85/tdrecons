@@ -91,7 +91,8 @@ export function useDataSources() {
     generateMappings,
     loadDataSources,
     getAvailableFields,
-    applyMappingTemplate: useMappingTemplate(config, setConfig)
+    applyMappingTemplate: useMappingTemplate(config, setConfig),
+    setReconciliationResults
   };
 }
 

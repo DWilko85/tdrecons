@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ReconcileHeader from "@/components/reconciliation/ReconcileHeader";
 import ReconciliationContent from "@/components/reconciliation/ReconciliationContent";
 import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
 import { useReconcilePageState } from "@/hooks/useReconcilePageState";
+import { useDataSources } from "@/hooks/useDataSources";
 
 const Reconcile = () => {
   const {
@@ -23,6 +24,26 @@ const Reconcile = () => {
     handleReconcile,
     saveReconciliation
   } = useReconcilePageState();
+
+  const { setReconciliationResults } = useDataSources();
+
+  // Check for stored results on component mount
+  useEffect(() => {
+    try {
+      if (reconciliationResults.length === 0) {
+        const storedResults = sessionStorage.getItem('tempReconciliationResults');
+        if (storedResults) {
+          const parsedResults = JSON.parse(storedResults);
+          if (Array.isArray(parsedResults) && parsedResults.length > 0) {
+            console.log("Loading stored reconciliation results from session storage");
+            setReconciliationResults(parsedResults);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error loading stored results:", err);
+    }
+  }, [reconciliationResults.length, setReconciliationResults]);
 
   return (
     <div className="min-h-screen pb-16">
