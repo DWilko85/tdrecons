@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDataSources } from "@/hooks/useDataSources";
@@ -19,7 +18,6 @@ export function useReconcilePageState() {
   const [isSaving, setIsSaving] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  // Calculate statistics from reconciliation results
   const stats = {
     total: reconciliationResults.length,
     matching: reconciliationResults.filter(r => r.status === 'matching').length,
@@ -34,7 +32,6 @@ export function useReconcilePageState() {
     stats.missingA === 0 && 
     stats.missingB === 0;
 
-  // Handle initial auto-reconciliation if directed from navigation
   useEffect(() => {
     const shouldRunReconciliation = location.state?.runReconciliation === true;
     
@@ -47,7 +44,6 @@ export function useReconcilePageState() {
     setInitialLoadDone(true);
   }, [location.state, initialLoadDone]);
 
-  // Control loading state visibility
   useEffect(() => {
     if (isReconciling) {
       setShowLoadingState(true);
@@ -62,7 +58,6 @@ export function useReconcilePageState() {
     }
   }, [reconciliationResults, isReconciling]);
 
-  // Log current state for debugging
   useEffect(() => {
     console.log("Reconcile page state:", { 
       resultsLength: reconciliationResults?.length || 0,
@@ -95,33 +90,60 @@ export function useReconcilePageState() {
       setIsSaving(true);
 
       const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData.session) {
-        toast.error("You must be logged in to save reconciliations");
-        setSaveDialogOpen(false);
-        return;
-      }
+      const userId = sessionData.session?.user.id;
+      
+      if (!userId) {
+        const anonymousId = localStorage.getItem('anonymousUserId') || 
+                          crypto.randomUUID();
+        localStorage.setItem('anonymousUserId', anonymousId);
+        
+        console.log("No authenticated session, using anonymous ID:", anonymousId);
+        
+        const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
 
-      // Convert results to a JSON-compatible format
-      const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
+        console.log("Saving reconciliation with", reconciliationResults.length, "records as anonymous user");
 
-      console.log("Saving reconciliation with", reconciliationResults.length, "records");
+        const { error } = await supabase.from('reconciliation_history').insert({
+          name,
+          description,
+          source_a_name: config.sourceA.name,
+          source_b_name: config.sourceB.name,
+          total_records: stats.total,
+          matching_records: stats.matching,
+          different_records: stats.different,
+          missing_a_records: stats.missingA,
+          missing_b_records: stats.missingB,
+          results: resultsForDb,
+          user_id: anonymousId
+        });
 
-      const { error } = await supabase.from('reconciliation_history').insert({
-        name,
-        description,
-        source_a_name: config.sourceA.name,
-        source_b_name: config.sourceB.name,
-        total_records: stats.total,
-        matching_records: stats.matching,
-        different_records: stats.different,
-        missing_a_records: stats.missingA,
-        missing_b_records: stats.missingB,
-        results: resultsForDb,
-        user_id: sessionData.session.user.id
-      });
+        if (error) {
+          console.error("Error details:", error);
+          throw error;
+        }
+      } else {
+        const resultsForDb = JSON.parse(JSON.stringify(reconciliationResults));
 
-      if (error) {
-        throw error;
+        console.log("Saving reconciliation with", reconciliationResults.length, "records as authenticated user");
+
+        const { error } = await supabase.from('reconciliation_history').insert({
+          name,
+          description,
+          source_a_name: config.sourceA.name,
+          source_b_name: config.sourceB.name,
+          total_records: stats.total,
+          matching_records: stats.matching,
+          different_records: stats.different,
+          missing_a_records: stats.missingA,
+          missing_b_records: stats.missingB,
+          results: resultsForDb,
+          user_id: userId
+        });
+
+        if (error) {
+          console.error("Error details:", error);
+          throw error;
+        }
       }
 
       toast.success("Reconciliation saved successfully");
@@ -140,7 +162,6 @@ export function useReconcilePageState() {
   const shouldShowLoading = isReconciling;
 
   return {
-    // State
     config,
     reconciliationResults,
     isReconciling,
@@ -150,13 +171,11 @@ export function useReconcilePageState() {
     stats,
     isPerfectMatch,
     
-    // Display flags
     shouldShowNoConfigMessage,
     shouldShowNoResultsMessage,
     shouldShowResults,
     shouldShowLoading,
     
-    // Actions
     setSaveDialogOpen,
     handleReconcile,
     saveReconciliation

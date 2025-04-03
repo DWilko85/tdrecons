@@ -19,10 +19,37 @@ const History = () => {
       setIsLoading(true);
       console.log("Fetching reconciliation history...");
       
-      const { data, error } = await supabase
+      // Check if the table exists first
+      try {
+        const { error: tableCheckError } = await supabase
+          .from('reconciliation_history')
+          .select('count')
+          .limit(1);
+        
+        if (tableCheckError && tableCheckError.code === 'PGRST116') {
+          console.error("reconciliation_history table doesn't exist:", tableCheckError);
+          setHistory([]);
+          return;
+        }
+      } catch (tableErr) {
+        console.error("Error checking table:", tableErr);
+      }
+      
+      // Get the current user's session
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthenticated = !!sessionData.session;
+      
+      let query = supabase
         .from('reconciliation_history')
         .select('*')
         .order('created_at', { ascending: false });
+      
+      // If authenticated, only fetch user's records
+      if (isAuthenticated) {
+        query = query.eq('user_id', sessionData.session?.user.id);
+      }
+      
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching history:", error);
@@ -36,11 +63,11 @@ const History = () => {
         const parsedData = data.map(item => ({
           ...item,
           results: Array.isArray(item.results) ? item.results : 
-                   (typeof item.results === 'string' ? JSON.parse(item.results) : item.results)
+                   (typeof item.results === 'string' ? JSON.parse(item.results) : [])
         }));
         
         // Cast the data to ReconciliationHistory[]
-        setHistory(parsedData as unknown as ReconciliationHistory[]);
+        setHistory(parsedData as ReconciliationHistory[]);
       } else {
         console.log("No history data found");
         setHistory([]);
@@ -97,6 +124,13 @@ const History = () => {
               </Button>
             </div>
           )}
+
+          <div className="mt-8 text-center">
+            <Button variant="outline" onClick={fetchHistory}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh History
+            </Button>
+          </div>
         </div>
       </section>
     </div>
