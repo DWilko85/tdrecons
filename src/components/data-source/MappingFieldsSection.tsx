@@ -5,7 +5,6 @@ import FieldMappingsCard from "./FieldMappingsCard";
 import KeyMappingCard from "./KeyMappingCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import AutoReconcileToggle from "./AutoReconcileToggle";
 import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
 
 interface MappingFieldsSectionProps {
@@ -18,7 +17,6 @@ interface MappingFieldsSectionProps {
   };
   canReconcile: boolean;
   isSavingMappings: boolean;
-  autoReconcileOnUpload: boolean;
   sourceAId?: string;
   sourceBId?: string;
   onAddMapping: () => void;
@@ -26,7 +24,6 @@ interface MappingFieldsSectionProps {
   onRemoveMapping: (index: number) => void;
   onSwapMappingFields: (index: number) => void;
   onUpdateKeyMapping?: (sourceAField: string, sourceBField: string) => void;
-  onAutoReconcileChange: (checked: boolean) => void;
   onReconcile: () => void;
   onSaveTemplate?: (templateName: string) => Promise<boolean>;
 }
@@ -38,7 +35,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   keyMapping,
   canReconcile,
   isSavingMappings,
-  autoReconcileOnUpload,
   sourceAId,
   sourceBId,
   onAddMapping,
@@ -46,7 +42,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   onRemoveMapping,
   onSwapMappingFields,
   onUpdateKeyMapping,
-  onAutoReconcileChange,
   onReconcile,
   onSaveTemplate,
 }) => {
@@ -66,13 +61,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
           <div>
             <Card className="border border-border/50 shadow-sm">
               <CardContent className="p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <AutoReconcileToggle
-                    checked={autoReconcileOnUpload}
-                    onCheckedChange={onAutoReconcileChange}
-                  />
-                </div>
-                
                 <SaveMappingTemplateDialog
                   mappings={mappings}
                   keyMapping={keyMapping}

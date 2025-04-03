@@ -15,7 +15,7 @@ interface DataSourceConfigProps {
   onSwapMappingFields: (index: number) => void;
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
-  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | null | undefined;
+  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto') => DataSource | null | undefined;
   onApplyMappingTemplate: (template: Template) => void;
 }
 

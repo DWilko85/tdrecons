@@ -76,16 +76,13 @@ const Configure = () => {
     toast.success(`Applied mapping template: ${template.name}`);
   };
 
-  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile: boolean = false) => {
-    console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}, autoReconcile: ${autoReconcile}`);
+  const handleUploadFile = (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto') => {
+    console.log(`Handling file upload: ${fileName} with ${data.length} records, setAs: ${setAs}`);
     
-    addFileSourceAndReconcile(data, fileName, setAs, autoReconcile)
+    addFileSourceAndReconcile(data, fileName, setAs)
       .then(newSource => {
-        if (newSource && autoReconcile && config.sourceA && config.sourceB) {
-          console.log("Auto-navigating to reconcile page after file upload");
-          setTimeout(() => {
-            navigate("/reconcile", { state: { runReconciliation: true } });
-          }, 500);
+        if (newSource) {
+          console.log("File uploaded successfully:", newSource.name);
         }
       })
       .catch(err => {

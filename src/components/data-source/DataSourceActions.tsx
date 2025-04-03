@@ -3,7 +3,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DataSourceConfig } from "@/hooks/useDataSources";
-import AutoReconcileToggle from "./AutoReconcileToggle";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
@@ -12,8 +11,6 @@ interface DataSourceActionsProps {
   config: DataSourceConfig;
   canReconcile: boolean;
   isSavingMappings: boolean;
-  autoReconcileOnUpload: boolean;
-  onAutoReconcileChange: (checked: boolean) => void;
   onReconcile: () => void;
   onSaveTemplate: (templateName: string) => Promise<boolean>;
 }
@@ -22,8 +19,6 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
   config,
   canReconcile,
   isSavingMappings,
-  autoReconcileOnUpload,
-  onAutoReconcileChange,
   onReconcile,
   onSaveTemplate,
 }) => {
@@ -87,13 +82,6 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
 
   return (
     <div className="w-full flex flex-col space-y-6">
-      <div className="flex items-center justify-between">
-        <AutoReconcileToggle
-          checked={autoReconcileOnUpload}
-          onCheckedChange={onAutoReconcileChange}
-        />
-      </div>
-      
       {config.sourceA && config.sourceB && (
         <SaveMappingTemplateDialog
           mappings={config.mappings}

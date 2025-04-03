@@ -22,7 +22,7 @@ interface DataSourceConfigProps {
   onSwapMappingFields: (index: number) => void;
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
-  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto', autoReconcile?: boolean) => DataSource | null | undefined;
+  onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto') => DataSource | null | undefined;
   onApplyMappingTemplate: (template: Template) => void;
 }
 
@@ -41,7 +41,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onApplyMappingTemplate,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
-  const [autoReconcileOnUpload, setAutoReconcileOnUpload] = useState<boolean>(false);
   const [isSavingMappings, setIsSavingMappings] = useState(false);
 
   const canReconcile = 
@@ -52,11 +51,11 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     keyMapping.sourceBField;
 
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
-    onFileUpload(data, fileName, 'sourceA', autoReconcileOnUpload);
+    onFileUpload(data, fileName, 'sourceA');
   };
 
   const handleFileUploadForSourceB = (data: any[], fileName: string) => {
-    onFileUpload(data, fileName, 'sourceB', autoReconcileOnUpload);
+    onFileUpload(data, fileName, 'sourceB');
   };
 
   const handleAddMapping = () => {
@@ -73,10 +72,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       console.log("Selected template:", template);
       onApplyMappingTemplate(template);
     }
-  };
-
-  const handleAutoReconcileChange = (checked: boolean) => {
-    setAutoReconcileOnUpload(checked);
   };
 
   const saveMappingsAsTemplate = async (templateName: string): Promise<boolean> => {
@@ -144,13 +139,11 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           keyMapping={keyMapping}
           canReconcile={canReconcile}
           isSavingMappings={isSavingMappings}
-          autoReconcileOnUpload={autoReconcileOnUpload}
           onAddMapping={handleAddMapping}
           onUpdateMapping={onUpdateMapping}
           onRemoveMapping={onRemoveMapping}
           onSwapMappingFields={onSwapMappingFields}
           onUpdateKeyMapping={onUpdateKeyMapping}
-          onAutoReconcileChange={handleAutoReconcileChange}
           onReconcile={onReconcile}
           onSaveTemplate={saveMappingsAsTemplate}
         />
