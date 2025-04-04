@@ -1,21 +1,19 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, History, RefreshCw, Save } from "lucide-react";
+import { ArrowLeft, History, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedTransition from "@/components/AnimatedTransition";
 
 interface ReconcileHeaderProps {
   isReconciling: boolean;
   hasResults: boolean;
-  onSave: () => void;
   onReconcile: () => void;
 }
 
 const ReconcileHeader: React.FC<ReconcileHeaderProps> = ({
   isReconciling,
   hasResults,
-  onSave,
   onReconcile,
 }) => {
   return (
@@ -39,16 +37,6 @@ const ReconcileHeader: React.FC<ReconcileHeaderProps> = ({
         </div>
         
         <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
-          <Button 
-            variant="outline"
-            className="gap-2" 
-            onClick={onSave}
-            disabled={isReconciling || !hasResults}
-          >
-            <Save className="h-4 w-4" />
-            <span>Save Results</span>
-          </Button>
-          
           <Button 
             className="gap-2" 
             onClick={onReconcile}

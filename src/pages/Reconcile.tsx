@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ReconcileHeader from "@/components/reconciliation/ReconcileHeader";
 import ReconciliationContent from "@/components/reconciliation/ReconciliationContent";
-import SaveReconciliationDialog from "@/components/SaveReconciliationDialog";
 import { useReconcilePageState } from "@/hooks/useReconcilePageState";
 import { useDataSources } from "@/hooks/useDataSources";
 
@@ -12,7 +11,6 @@ const Reconcile = () => {
     config,
     reconciliationResults,
     isReconciling,
-    saveDialogOpen,
     isSaving,
     stats,
     isPerfectMatch,
@@ -20,7 +18,6 @@ const Reconcile = () => {
     shouldShowNoResultsMessage,
     shouldShowResults,
     shouldShowLoading,
-    setSaveDialogOpen,
     handleReconcile,
     saveReconciliation
   } = useReconcilePageState();
@@ -52,7 +49,6 @@ const Reconcile = () => {
           <ReconcileHeader
             isReconciling={isReconciling}
             hasResults={reconciliationResults.length > 0}
-            onSave={() => setSaveDialogOpen(true)}
             onReconcile={handleReconcile}
           />
         </div>
@@ -69,13 +65,6 @@ const Reconcile = () => {
         shouldShowLoading={shouldShowLoading}
         stats={stats}
         onReconcile={handleReconcile}
-      />
-      
-      <SaveReconciliationDialog
-        open={saveDialogOpen}
-        onOpenChange={setSaveDialogOpen}
-        onSave={saveReconciliation}
-        isSaving={isSaving}
       />
     </div>
   );

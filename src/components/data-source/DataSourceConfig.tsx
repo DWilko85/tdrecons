@@ -5,7 +5,6 @@ import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/types/da
 import { FieldMapping } from "@/types/dataSources";
 import { Template } from "@/services/templatesService";
 import { supabase } from "@/integrations/supabase/client";
-import { saveTemplate } from "@/services/templatesService";
 import AnimatedTransition from "../AnimatedTransition";
 import ConfigHeader from "./ConfigHeader";
 import SourceSections from "./SourceSections";
@@ -74,48 +73,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
-  const saveMappingsAsTemplate = async (templateName: string): Promise<boolean> => {
-    if (!sourceA || !sourceB || mappings.length === 0) {
-      toast.error("Cannot save an empty template");
-      return false;
-    }
-
-    try {
-      setIsSavingMappings(true);
-      
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user.id;
-      
-      if (!userId) {
-        console.log("No user ID available for saving mappings");
-        return false;
-      }
-      
-      // Use the imported saveTemplate function here
-      const success = await saveTemplate(
-        templateName,
-        null, // No description from this method
-        { mappings, keyMapping },
-        sourceA.id,
-        sourceB.id
-      );
-      
-      if (success) {
-        console.log("Mapping template saved successfully");
-        toast.success("Template saved successfully");
-        return true;
-      } else {
-        toast.error("Failed to save template");
-        return false;
-      }
-    } catch (err) {
-      console.error("Error in saveMappingsAsTemplate:", err);
-      toast.error("Error saving template");
-      return false;
-    } finally {
-      setIsSavingMappings(false);
-    }
-  };
+  // Removed saveMappingsAsTemplate function
 
   return (
     <div className="space-y-6">
@@ -145,7 +103,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           onSwapMappingFields={onSwapMappingFields}
           onUpdateKeyMapping={onUpdateKeyMapping}
           onReconcile={onReconcile}
-          onSaveTemplate={saveMappingsAsTemplate}
         />
       )}
     </div>

@@ -5,14 +5,12 @@ import { toast } from "sonner";
 import { DataSourceConfig } from "@/hooks/useDataSources";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
-import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
 
 interface DataSourceActionsProps {
   config: DataSourceConfig;
   canReconcile: boolean;
   isSavingMappings: boolean;
   onReconcile: () => void;
-  onSaveTemplate: (templateName: string) => Promise<boolean>;
 }
 
 const DataSourceActions: React.FC<DataSourceActionsProps> = ({
@@ -20,7 +18,6 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
   canReconcile,
   isSavingMappings,
   onReconcile,
-  onSaveTemplate,
 }) => {
   const saveMappingsToDatabase = async () => {
     if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
@@ -82,16 +79,6 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
 
   return (
     <div className="w-full flex flex-col space-y-6">
-      {config.sourceA && config.sourceB && (
-        <SaveMappingTemplateDialog
-          mappings={config.mappings}
-          keyMapping={config.keyMapping}
-          onSaveTemplate={onSaveTemplate}
-          sourceAName={config.sourceA.name}
-          sourceBName={config.sourceB.name}
-        />
-      )}
-      
       {canReconcile && (
         <Button
           className="w-full"
