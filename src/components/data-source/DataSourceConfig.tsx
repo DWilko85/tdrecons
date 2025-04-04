@@ -3,10 +3,8 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { DataSource, DataSourceConfig as DataSourceConfigType } from "@/types/dataSources";
 import { FieldMapping } from "@/types/dataSources";
-import { Template } from "@/services/templatesService";
 import { supabase } from "@/integrations/supabase/client";
 import AnimatedTransition from "../AnimatedTransition";
-import ConfigHeader from "./ConfigHeader";
 import SourceSections from "./SourceSections";
 import MappingFieldsSection from "./MappingFieldsSection";
 
@@ -22,7 +20,6 @@ interface DataSourceConfigProps {
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
   onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto') => DataSource | null | undefined;
-  onApplyMappingTemplate: (template: Template) => void;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
@@ -37,7 +34,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onUpdateKeyMapping,
   onReconcile,
   onFileUpload,
-  onApplyMappingTemplate,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
 
@@ -65,17 +61,8 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     onAddMapping();
   };
 
-  const handleSelectTemplate = (template: Template | null) => {
-    if (template) {
-      console.log("Selected template:", template);
-      onApplyMappingTemplate(template);
-    }
-  };
-
   return (
     <div className="space-y-6">
-      <ConfigHeader onSelectTemplate={handleSelectTemplate} />
-      
       <AnimatedTransition type="slide-up" delay={0.1}>
         <SourceSections 
           sourceA={sourceA}

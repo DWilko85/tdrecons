@@ -1,7 +1,6 @@
 
 import React from "react";
 import { DataSource, DataSourceConfig as DataSourceConfigType, FieldMapping } from "@/types/dataSources";
-import { Template } from "@/services/templatesService";
 import DataSourceConfigComponent from "./data-source/DataSourceConfig";
 
 interface DataSourceConfigProps {
@@ -16,7 +15,6 @@ interface DataSourceConfigProps {
   onUpdateKeyMapping: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
   onFileUpload: (data: any[], fileName: string, setAs?: 'sourceA' | 'sourceB' | 'auto') => DataSource | null | undefined;
-  onApplyMappingTemplate: (template: Template) => void;
 }
 
 const DataSourceConfig: React.FC<DataSourceConfigProps> = (props) => {

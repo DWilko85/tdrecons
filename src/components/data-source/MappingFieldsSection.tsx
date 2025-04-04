@@ -5,7 +5,6 @@ import FieldMappingsCard from "./FieldMappingsCard";
 import KeyMappingCard from "./KeyMappingCard";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import SaveMappingTemplateDialog from "./SaveMappingTemplateDialog";
 
 interface MappingFieldsSectionProps {
   sourceA: DataSource | null;
@@ -24,7 +23,6 @@ interface MappingFieldsSectionProps {
   onSwapMappingFields: (index: number) => void;
   onUpdateKeyMapping?: (sourceAField: string, sourceBField: string) => void;
   onReconcile: () => void;
-  onSaveTemplate?: (templateName: string) => Promise<boolean>;
 }
 
 const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
@@ -33,15 +31,12 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   mappings,
   keyMapping,
   canReconcile,
-  sourceAId,
-  sourceBId,
   onAddMapping,
   onUpdateMapping,
   onRemoveMapping,
   onSwapMappingFields,
   onUpdateKeyMapping,
   onReconcile,
-  onSaveTemplate,
 }) => {
   return (
     <div className="space-y-6">
@@ -59,16 +54,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
           <div>
             <Card className="border border-border/50 shadow-sm">
               <CardContent className="p-4 space-y-4">
-                <SaveMappingTemplateDialog
-                  mappings={mappings}
-                  keyMapping={keyMapping}
-                  sourceAId={sourceA?.id}
-                  sourceBId={sourceB?.id}
-                  sourceAName={sourceA?.name}
-                  sourceBName={sourceB?.name}
-                  onSaveTemplate={onSaveTemplate}
-                />
-                
                 {canReconcile && (
                   <Button
                     className="w-full"
