@@ -9,7 +9,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { SwapHorizontal, Trash2 } from "lucide-react";
+import { ArrowLeftRight, Trash2 } from "lucide-react";
 import AdvancedMatchingConfig from "./AdvancedMatchingConfig";
 
 interface MappingsTableProps {
@@ -149,7 +149,7 @@ const MappingsTable: React.FC<MappingsTableProps> = ({
                     size="icon"
                     onClick={() => onSwapMappingFields(index)}
                   >
-                    <SwapHorizontal className="h-4 w-4" />
+                    <ArrowLeftRight className="h-4 w-4" />
                     <span className="sr-only">Swap fields</span>
                   </Button>
                   <Button

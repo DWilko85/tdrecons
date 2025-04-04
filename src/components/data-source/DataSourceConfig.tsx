@@ -73,8 +73,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
     }
   };
 
-  // Removed saveMappingsAsTemplate function to fix the type error
-
   return (
     <div className="space-y-6">
       <ConfigHeader onSelectTemplate={handleSelectTemplate} />
@@ -96,7 +94,7 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           mappings={mappings}
           keyMapping={keyMapping}
           canReconcile={canReconcile}
-          isSavingMappings={false} // Fixed boolean value instead of string
+          isSavingMappings={false}
           onAddMapping={handleAddMapping}
           onUpdateMapping={onUpdateMapping}
           onRemoveMapping={onRemoveMapping}
