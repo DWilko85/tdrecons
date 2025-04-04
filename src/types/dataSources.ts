@@ -12,6 +12,24 @@ export interface FieldMapping {
   sourceFieldA: string;
   sourceFieldB: string;
   displayName: string;
+  matchingRule?: MatchingRule;
+}
+
+export interface MatchingRule {
+  type: 'exact' | 'fuzzy' | 'numeric' | 'date' | 'custom';
+  // For fuzzy matching
+  fuzzyThreshold?: number; // 0-1, where 1 is exact match
+  // For numeric matching
+  numericTolerance?: {
+    type: 'absolute' | 'percentage';
+    value: number;
+  };
+  // For date matching
+  dateTolerance?: {
+    days: number;
+  };
+  // For custom matching (future expansion)
+  customRule?: string;
 }
 
 export interface DataSourceConfig {
