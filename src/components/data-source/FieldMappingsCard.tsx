@@ -17,7 +17,6 @@ interface FieldMappingsCardProps {
     sourceBField: string;
   };
   canReconcile: boolean;
-  isSavingMappings: boolean;
   onAddMapping: () => void;
   onUpdateMapping: (index: number, mapping: FieldMapping) => void;
   onRemoveMapping: (index: number) => void;

@@ -40,7 +40,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
   onApplyMappingTemplate,
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
-  const [isSavingMappings, setIsSavingMappings] = useState(false);
 
   const canReconcile = 
     sourceA !== null && 
@@ -94,7 +93,6 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
           mappings={mappings}
           keyMapping={keyMapping}
           canReconcile={canReconcile}
-          isSavingMappings={false}
           onAddMapping={handleAddMapping}
           onUpdateMapping={onUpdateMapping}
           onRemoveMapping={onRemoveMapping}

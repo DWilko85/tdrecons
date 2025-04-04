@@ -9,14 +9,12 @@ import { Json } from "@/integrations/supabase/types";
 interface DataSourceActionsProps {
   config: DataSourceConfig;
   canReconcile: boolean;
-  isSavingMappings: boolean;
   onReconcile: () => void;
 }
 
 const DataSourceActions: React.FC<DataSourceActionsProps> = ({
   config,
   canReconcile,
-  isSavingMappings,
   onReconcile,
 }) => {
   const saveMappingsToDatabase = async () => {
@@ -83,7 +81,6 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
         <Button
           className="w-full"
           size="lg"
-          disabled={isSavingMappings}
           onClick={handleReconcile}
         >
           Reconcile Data Sources

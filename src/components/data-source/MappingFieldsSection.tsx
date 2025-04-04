@@ -16,7 +16,6 @@ interface MappingFieldsSectionProps {
     sourceBField: string;
   };
   canReconcile: boolean;
-  isSavingMappings: boolean;
   sourceAId?: string;
   sourceBId?: string;
   onAddMapping: () => void;
@@ -34,7 +33,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   mappings,
   keyMapping,
   canReconcile,
-  isSavingMappings,
   sourceAId,
   sourceBId,
   onAddMapping,
@@ -75,7 +73,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
                   <Button
                     className="w-full"
                     size="lg"
-                    disabled={isSavingMappings}
                     onClick={onReconcile}
                   >
                     Reconcile Data Sources
@@ -93,7 +90,6 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
         mappings={mappings}
         keyMapping={keyMapping}
         canReconcile={canReconcile}
-        isSavingMappings={isSavingMappings}
         onAddMapping={onAddMapping}
         onUpdateMapping={onUpdateMapping}
         onRemoveMapping={onRemoveMapping}
