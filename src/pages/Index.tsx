@@ -1,30 +1,18 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronRight, 
-  Database, 
-  History,
-  BarChart, 
-  FileCheck,
-  Sparkles
-} from "lucide-react";
+import { ChevronRight, Database, History, BarChart, FileCheck, Sparkles } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import AnimatedTransition from "@/components/AnimatedTransition";
-
 const Index = () => {
-  return (
-    <div className="min-h-screen">
+  return <div className="min-h-screen">
       <Navbar />
       
       {/* Hero Section */}
       <section className="pt-32 pb-20 text-center">
         <div className="container max-w-4xl">
           <AnimatedTransition type="fade" delay={0.1}>
-            <h1 className="text-5xl font-bold mb-6 leading-tight">
-              AI-Powered Data Reconciliation
-            </h1>
+            <h1 className="text-5xl font-bold mb-6 leading-tight">TD data Reconciliation</h1>
           </AnimatedTransition>
           
           <AnimatedTransition type="fade" delay={0.2}>
@@ -120,8 +108,6 @@ const Index = () => {
           </AnimatedTransition>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
