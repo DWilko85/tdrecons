@@ -27,17 +27,15 @@ const Reconcile = () => {
 
   const { setReconciliationResults } = useDataSources();
 
-  // Check for stored results on component mount
+  // Load saved results from sessionStorage on component mount
   useEffect(() => {
     try {
-      if (reconciliationResults.length === 0) {
-        const storedResults = sessionStorage.getItem('tempReconciliationResults');
-        if (storedResults) {
-          const parsedResults = JSON.parse(storedResults);
-          if (Array.isArray(parsedResults) && parsedResults.length > 0) {
-            console.log("Loading stored reconciliation results from session storage");
-            setReconciliationResults(parsedResults);
-          }
+      const storedResults = sessionStorage.getItem('tempReconciliationResults');
+      if (storedResults && reconciliationResults.length === 0) {
+        const parsedResults = JSON.parse(storedResults);
+        if (Array.isArray(parsedResults) && parsedResults.length > 0) {
+          console.log("Loading stored reconciliation results from session storage");
+          setReconciliationResults(parsedResults);
         }
       }
     } catch (err) {

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
@@ -112,6 +111,7 @@ export function useReconciliation() {
   const clearResults = useCallback(() => {
     setReconciliationResults([]);
     setLastConfig(null);
+    sessionStorage.removeItem('tempReconciliationResults');
   }, []);
 
   // Auto-reconcile when config changes if we have a previous config

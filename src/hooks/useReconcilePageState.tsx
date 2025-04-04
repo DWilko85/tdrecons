@@ -34,47 +34,23 @@ export function useReconcilePageState() {
     stats.missingA === 0 && 
     stats.missingB === 0;
 
-  // Check for stored results on initial load
+  // Store reconciliation results in sessionStorage whenever they change
   useEffect(() => {
-    const checkStoredResults = async () => {
+    if (reconciliationResults.length > 0) {
       try {
-        // Check if we have temporary results in sessionStorage
-        const storedResults = sessionStorage.getItem('tempReconciliationResults');
-        const storedConfig = sessionStorage.getItem('tempReconciliationConfig');
-        
-        if (storedResults && storedConfig && reconciliationResults.length === 0) {
-          console.log("Found stored reconciliation results, loading from session storage");
-          // We have stored results, no need to run reconciliation
-          setInitialLoadDone(true);
-        } else if (location.state?.runReconciliation === true && !initialLoadDone) {
-          console.log("Running reconciliation due to explicit navigation request");
-          if (config.sourceA && config.sourceB && config.mappings.length > 0) {
-            handleReconcile();
-          }
-        }
+        const resultsJson = JSON.stringify(reconciliationResults);
+        sessionStorage.setItem('tempReconciliationResults', resultsJson);
+        console.log("Stored reconciliation results in session storage");
       } catch (err) {
-        console.error("Error checking stored results:", err);
+        console.error("Failed to store results in session storage:", err);
       }
-      setInitialLoadDone(true);
-    };
-    
-    checkStoredResults();
-  }, [location.state, initialLoadDone, reconciliationResults.length]);
+    }
+  }, [reconciliationResults]);
 
   useEffect(() => {
     if (isReconciling) {
       setShowLoadingState(true);
     } else if (reconciliationResults.length > 0) {
-      // Store results in sessionStorage
-      try {
-        const resultsJson = JSON.stringify(reconciliationResults);
-        const configJson = JSON.stringify(config);
-        sessionStorage.setItem('tempReconciliationResults', resultsJson);
-        sessionStorage.setItem('tempReconciliationConfig', configJson);
-        console.log("Stored reconciliation results in session storage");
-      } catch (err) {
-        console.error("Failed to store results in session storage:", err);
-      }
       setShowLoadingState(false);
     } else {
       const timeout = setTimeout(() => {
@@ -83,24 +59,18 @@ export function useReconcilePageState() {
       
       return () => clearTimeout(timeout);
     }
-  }, [reconciliationResults, isReconciling, config]);
+  }, [reconciliationResults, isReconciling]);
 
-  useEffect(() => {
-    console.log("Reconcile page state:", { 
-      resultsLength: reconciliationResults?.length || 0,
-      isReconciling,
-      lastConfig: lastConfig ? {
-        sourceA: lastConfig?.sourceA?.name || 'none',
-        sourceB: lastConfig?.sourceB?.name || 'none',
-        mappings: lastConfig?.mappings?.length || 0
-      } : null,
-      config: {
-        sourceA: config?.sourceA?.name || 'none',
-        sourceB: config?.sourceB?.name || 'none',
-        mappings: config?.mappings?.length || 0
-      }
-    });
-  }, [reconciliationResults, isReconciling, config, lastConfig]);
+  // Check if we have stored results
+  const hasStoredResults = () => {
+    if (reconciliationResults.length > 0) return true;
+    try {
+      const storedResults = sessionStorage.getItem('tempReconciliationResults');
+      return !!storedResults;
+    } catch (e) {
+      return false;
+    }
+  };
 
   const handleReconcile = () => {
     if (!config.sourceA || !config.sourceB) {
@@ -189,17 +159,6 @@ export function useReconcilePageState() {
   };
 
   // Determine if we should show appropriate screens based on available data
-  // Use the sessionStorage results if we don't have any in memory
-  const hasStoredResults = () => {
-    if (reconciliationResults.length > 0) return true;
-    try {
-      const storedResults = sessionStorage.getItem('tempReconciliationResults');
-      return !!storedResults;
-    } catch (e) {
-      return false;
-    }
-  };
-
   const shouldShowNoConfigMessage = !config.sourceA || !config.sourceB || config.mappings.length === 0;
   const shouldShowNoResultsMessage = !isReconciling && !hasStoredResults() && !shouldShowNoConfigMessage;
   const shouldShowResults = reconciliationResults.length > 0 || hasStoredResults();

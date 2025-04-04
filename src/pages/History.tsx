@@ -19,44 +19,16 @@ const History = () => {
       setIsLoading(true);
       console.log("Fetching reconciliation history...");
       
-      // Check if the table exists first
-      try {
-        const { error: tableCheckError } = await supabase
-          .from('reconciliation_history')
-          .select('count')
-          .limit(1);
-        
-        if (tableCheckError && tableCheckError.code === 'PGRST116') {
-          console.error("reconciliation_history table doesn't exist:", tableCheckError);
-          setHistory([]);
-          return;
-        }
-      } catch (tableErr) {
-        console.error("Error checking table:", tableErr);
-      }
-      
-      // Get the current user's session
-      const { data: sessionData } = await supabase.auth.getSession();
-      const isAuthenticated = !!sessionData.session;
-      
-      let query = supabase
+      const { data, error } = await supabase
         .from('reconciliation_history')
         .select('*')
         .order('created_at', { ascending: false });
-      
-      // If authenticated, only fetch user's records
-      if (isAuthenticated) {
-        query = query.eq('user_id', sessionData.session?.user.id);
-      }
-      
-      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching history:", error);
-        throw error;
-      }
-
-      if (data) {
+        toast.error("Failed to load reconciliation history");
+        setHistory([]);
+      } else if (data) {
         console.log("Fetched history data:", data.length, "records");
         
         // Ensure results are properly parsed
@@ -66,7 +38,6 @@ const History = () => {
                    (typeof item.results === 'string' ? JSON.parse(item.results) : [])
         }));
         
-        // Cast the data to ReconciliationHistory[]
         setHistory(parsedData as ReconciliationHistory[]);
       } else {
         console.log("No history data found");
