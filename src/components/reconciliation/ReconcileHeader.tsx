@@ -1,19 +1,23 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, History, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AnimatedTransition from "@/components/AnimatedTransition";
+
 interface ReconcileHeaderProps {
   isReconciling: boolean;
   hasResults: boolean;
   onReconcile: () => void;
 }
+
 const ReconcileHeader: React.FC<ReconcileHeaderProps> = ({
   isReconciling,
   hasResults,
   onReconcile
 }) => {
-  return <AnimatedTransition type="slide-down" delay={0.1}>
+  return (
+    <AnimatedTransition type="slide-down" delay={0.1}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -43,6 +47,8 @@ const ReconcileHeader: React.FC<ReconcileHeaderProps> = ({
           </Link>
         </Button>
       </div>
-    </AnimatedTransition>;
+    </AnimatedTransition>
+  );
 };
+
 export default ReconcileHeader;
