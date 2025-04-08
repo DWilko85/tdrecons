@@ -1,6 +1,7 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useParams, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import StatCard from "@/components/StatCard";
 import ReconciliationTable from "@/components/ReconciliationTable";
@@ -14,50 +15,57 @@ import { formatDistanceToNow } from "date-fns";
 
 const HistoryDetail = () => {
   const { id } = useParams();
-  const [history, setHistory] = useState<ReconciliationHistory | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchHistoryDetail = async () => {
-      if (!id) return;
+  const fetchHistoryDetail = async () => {
+    if (!id) throw new Error("No history ID provided");
 
-      try {
-        setIsLoading(true);
-        console.log("Fetching history detail for ID:", id);
-        
-        const { data, error } = await supabase
-          .from('reconciliation_history')
-          .select('*')
-          .eq('id', id)
-          .single();
+    console.log("Fetching history detail for ID:", id);
+    
+    const { data, error } = await supabase
+      .from('reconciliation_history')
+      .select('*')
+      .eq('id', id)
+      .single();
 
-        if (error) {
-          console.error("Error fetching history detail:", error);
-          throw error;
-        }
+    if (error) {
+      console.error("Error fetching history detail:", error);
+      throw error;
+    }
 
-        if (data) {
-          console.log("Fetched history detail:", data);
-          
-          // Ensure results are properly parsed
-          const parsedData = {
-            ...data,
-            results: Array.isArray(data.results) ? data.results : 
-                     (typeof data.results === 'string' ? JSON.parse(data.results) : data.results)
-          };
-          
-          setHistory(parsedData as ReconciliationHistory);
-        }
-      } catch (error) {
-        console.error("Error fetching history detail:", error);
-        toast.error("Failed to load reconciliation details");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (data) {
+      console.log("Fetched history detail:", data);
+      
+      // Ensure results are properly parsed
+      const parsedData = {
+        ...data,
+        results: Array.isArray(data.results) ? data.results : 
+                (typeof data.results === 'string' ? JSON.parse(data.results) : data.results)
+      };
+      
+      return parsedData as ReconciliationHistory;
+    }
+    
+    throw new Error("Reconciliation history not found");
+  };
 
-    fetchHistoryDetail();
-  }, [id]);
+  const { 
+    data: history, 
+    isLoading, 
+    error
+  } = useQuery({
+    queryKey: ['reconciliation-history', id],
+    queryFn: fetchHistoryDetail,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 1,
+    refetchOnWindowFocus: false
+  });
+
+  React.useEffect(() => {
+    if (error) {
+      console.error("Error in history detail query:", error);
+      toast.error("Failed to load reconciliation details");
+    }
+  }, [error]);
 
   if (isLoading) {
     return (

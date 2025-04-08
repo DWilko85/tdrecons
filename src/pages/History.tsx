@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import HistoryList from "@/components/HistoryList";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,50 +12,53 @@ import { Database, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const History = () => {
-  const [history, setHistory] = useState<ReconciliationHistory[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
   const fetchHistory = async () => {
-    try {
-      setIsLoading(true);
-      console.log("Fetching reconciliation history...");
-      
-      const { data, error } = await supabase
-        .from('reconciliation_history')
-        .select('*')
-        .order('created_at', { ascending: false });
+    console.log("Fetching reconciliation history...");
+    
+    const { data, error } = await supabase
+      .from('reconciliation_history')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error("Error fetching history:", error);
-        toast.error("Failed to load reconciliation history");
-        setHistory([]);
-      } else if (data) {
-        console.log("Fetched history data:", data.length, "records");
-        
-        // Ensure results are properly parsed
-        const parsedData = data.map(item => ({
-          ...item,
-          results: Array.isArray(item.results) ? item.results : 
-                   (typeof item.results === 'string' ? JSON.parse(item.results) : [])
-        }));
-        
-        setHistory(parsedData as ReconciliationHistory[]);
-      } else {
-        console.log("No history data found");
-        setHistory([]);
-      }
-    } catch (error) {
+    if (error) {
       console.error("Error fetching history:", error);
-      toast.error("Failed to load reconciliation history");
-      setHistory([]);
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
+    
+    if (data) {
+      console.log("Fetched history data:", data.length, "records");
+      
+      // Ensure results are properly parsed
+      const parsedData = data.map(item => ({
+        ...item,
+        results: Array.isArray(item.results) ? item.results : 
+                (typeof item.results === 'string' ? JSON.parse(item.results) : [])
+      }));
+      
+      return parsedData as ReconciliationHistory[];
+    }
+    
+    return [];
   };
 
+  const { 
+    data: history, 
+    isLoading, 
+    error, 
+    refetch 
+  } = useQuery({
+    queryKey: ['reconciliation-history'],
+    queryFn: fetchHistory,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false
+  });
+
   useEffect(() => {
-    fetchHistory();
-  }, []);
+    if (error) {
+      console.error("Error in history query:", error);
+      toast.error("Failed to load reconciliation history");
+    }
+  }, [error]);
 
   return (
     <div className="min-h-screen pb-16">
@@ -83,7 +87,7 @@ const History = () => {
               <h2 className="text-xl font-medium mb-2">Loading History</h2>
               <p className="text-muted-foreground">Fetching your reconciliation history...</p>
             </div>
-          ) : history.length > 0 ? (
+          ) : history && history.length > 0 ? (
             <HistoryList items={history} />
           ) : (
             <div className="text-center py-20">
@@ -97,7 +101,7 @@ const History = () => {
           )}
 
           <div className="mt-8 text-center">
-            <Button variant="outline" onClick={fetchHistory}>
+            <Button variant="outline" onClick={() => refetch()}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh History
             </Button>

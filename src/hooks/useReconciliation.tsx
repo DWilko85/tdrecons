@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
@@ -39,6 +40,10 @@ export function useReconciliation() {
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session?.user.id) {
           await saveResultsToDatabase(results, config, sessionData.session.user.id);
+        } else {
+          console.log("User not authenticated, skipping save to database");
+          // Save temporarily in session storage
+          sessionStorage.setItem('tempReconciliationResults', JSON.stringify(results));
         }
         
         toast.success(`Reconciliation complete: ${results.length} records processed`);
