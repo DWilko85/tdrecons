@@ -14,7 +14,7 @@ interface MappingFieldsSectionProps {
     sourceAField: string;
     sourceBField: string;
   };
-  canReconcile: boolean;
+  canReconcile: boolean;  // This must be a boolean type, not a string
   sourceAId?: string;
   sourceBId?: string;
   onAddMapping: () => void;
@@ -74,7 +74,7 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
         sourceB={sourceB}
         mappings={mappings}
         keyMapping={keyMapping}
-        canReconcile={canReconcile}
+        canReconcile={canReconcile}  // Ensure this is a boolean
         onAddMapping={onAddMapping}
         onUpdateMapping={onUpdateMapping}
         onRemoveMapping={onRemoveMapping}
