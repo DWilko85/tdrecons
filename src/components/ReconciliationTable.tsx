@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from "react";
 import {
   Table,
@@ -31,6 +32,7 @@ import {
   XCircle,
 } from "lucide-react";
 import LoadingState from "./reconciliation/LoadingState";
+import { cn } from "@/lib/utils";
 
 interface ReconciliationTableProps {
   results: ReconciliationResult[];
@@ -137,7 +139,25 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
               <TableHead className="w-[100px]">Key</TableHead>
               <TableHead>Status</TableHead>
               {results[0].fields.map((field) => (
-                <TableHead key={field.name}>{field.name}</TableHead>
+                <React.Fragment key={field.name}>
+                  <TableHead className="text-center bg-slate-50 border-l border-r">
+                    {field.name}
+                  </TableHead>
+                </React.Fragment>
+              ))}
+            </TableRow>
+            <TableRow className="border-b-0 h-8">
+              <TableHead></TableHead>
+              <TableHead></TableHead>
+              {results[0].fields.map((field) => (
+                <React.Fragment key={`${field.name}-headers`}>
+                  <TableHead className="py-0 h-8">
+                    <div className="flex text-xs font-normal text-muted-foreground">
+                      <div className="flex-1 text-right pr-2 border-r">Principal</div>
+                      <div className="flex-1 pl-2">Counterparty</div>
+                    </div>
+                  </TableHead>
+                </React.Fragment>
               ))}
             </TableRow>
           </TableHeader>
@@ -147,8 +167,8 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                 <TableCell className="font-medium">{result.key}</TableCell>
                 <TableCell>
                   {result.status === "matching" && (
-                    <Badge variant="outline">
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                    <Badge variant="outline" className="bg-green-50">
+                      <CheckCircle2 className="mr-2 h-4 w-4 text-green-500" />
                       Matching
                     </Badge>
                   )}
@@ -172,12 +192,37 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
                   )}
                 </TableCell>
                 {result.fields.map((field) => (
-                  <TableCell key={field.name}>
-                    {field.matching ? (
-                      <CheckCircle2 className="text-green-500 h-4 w-4 mx-auto" />
-                    ) : (
-                      <XCircle className="text-red-500 h-4 w-4 mx-auto" />
+                  <TableCell 
+                    key={field.name} 
+                    className={cn(
+                      "p-0 h-12",
+                      !field.matching && "bg-red-50"
                     )}
+                  >
+                    <div className="flex h-full">
+                      <div 
+                        className={cn(
+                          "flex-1 flex items-center justify-end px-2 border-r",
+                          result.status === "missing-a" && "bg-yellow-50/50",
+                          !field.matching && "text-red-600 font-medium"
+                        )}
+                      >
+                        {result.status !== "missing-a" 
+                          ? formatValue(field.valueA) 
+                          : "—"}
+                      </div>
+                      <div 
+                        className={cn(
+                          "flex-1 flex items-center px-2",
+                          result.status === "missing-b" && "bg-yellow-50/50",
+                          !field.matching && "text-red-600 font-medium"
+                        )}
+                      >
+                        {result.status !== "missing-b" 
+                          ? formatValue(field.valueB) 
+                          : "—"}
+                      </div>
+                    </div>
                   </TableCell>
                 ))}
               </TableRow>
@@ -187,6 +232,27 @@ const ReconciliationTable: React.FC<ReconciliationTableProps> = ({
       </div>
     </div>
   );
+};
+
+// Helper function to format values for display
+const formatValue = (value: any): string => {
+  if (value === null || value === undefined) {
+    return "—";
+  }
+  
+  if (typeof value === 'boolean') {
+    return value ? 'true' : 'false';
+  }
+  
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch (error) {
+      return String(value);
+    }
+  }
+  
+  return String(value);
 };
 
 export default ReconciliationTable;
