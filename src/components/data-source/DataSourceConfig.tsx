@@ -37,12 +37,14 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
 }) => {
   const { sourceA, sourceB, mappings, keyMapping } = config;
 
-  const canReconcile = 
+  // Explicitly ensure this evaluates to a boolean by using Boolean casting
+  const canReconcile: boolean = Boolean(
     sourceA !== null && 
     sourceB !== null && 
     mappings.length > 0 && 
     keyMapping.sourceAField && 
-    keyMapping.sourceBField;
+    keyMapping.sourceBField
+  );
 
   const handleFileUploadForSourceA = (data: any[], fileName: string) => {
     onFileUpload(data, fileName, 'sourceA');
