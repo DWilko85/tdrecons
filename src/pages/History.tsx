@@ -31,8 +31,9 @@ const History = () => {
       // Ensure results are properly parsed
       const parsedData = data.map(item => ({
         ...item,
-        results: Array.isArray(item.results) ? item.results : 
-                (typeof item.results === 'string' ? JSON.parse(item.results) : [])
+        results: typeof item.results === 'string' ? 
+                JSON.parse(item.results) : 
+                (Array.isArray(item.results) ? item.results : [])
       }));
       
       return parsedData as ReconciliationHistory[];
