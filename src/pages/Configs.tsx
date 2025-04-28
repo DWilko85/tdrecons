@@ -27,12 +27,22 @@ const Configs = () => {
   });
 
   const handleUseConfig = (config: any) => {
-    // Parse the config if it's stored as a string
-    const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
-    
-    // Store the config in session storage
-    sessionStorage.setItem('selectedConfig', JSON.stringify(parsedConfig));
-    navigate('/configure');
+    try {
+      // Ensure we're working with an object, not a string
+      let parsedConfig;
+      if (typeof config.config === 'string') {
+        parsedConfig = JSON.parse(config.config);
+      } else {
+        parsedConfig = config.config;
+      }
+      
+      // Store the config in session storage
+      sessionStorage.setItem('selectedConfig', JSON.stringify(parsedConfig));
+      navigate('/configure');
+    } catch (err) {
+      console.error("Error parsing config:", err);
+      toast.error("Error loading configuration");
+    }
   };
 
   return (
@@ -61,7 +71,7 @@ const Configs = () => {
                     )}
                   </div>
                   <Button
-                    onClick={() => handleUseConfig(config.config)}
+                    onClick={() => handleUseConfig(config)}
                     className="gap-2"
                   >
                     <Play className="h-4 w-4" />

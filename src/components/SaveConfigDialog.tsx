@@ -63,21 +63,24 @@ const SaveConfigDialog: React.FC<SaveConfigDialogProps> = ({
         return;
       }
 
-      // Convert the config object to a JSON format that Supabase can store
-      const configJson = JSON.parse(JSON.stringify(config));
+      // Convert the config object to a plain object first
+      const configCopy = JSON.parse(JSON.stringify(config));
 
       const { error } = await supabase
         .from('reconciliation_configs')
         .insert({
           name: values.name,
           description: values.description,
-          config: configJson,
+          config: configCopy,
           source_a_id: config.sourceA?.id,
           source_b_id: config.sourceB?.id,
           user_id: userId
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error details:", error);
+        throw error;
+      }
 
       toast.success("Configuration saved successfully");
       onOpenChange(false);
