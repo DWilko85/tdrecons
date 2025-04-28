@@ -32,6 +32,7 @@ const App = () => (
                 <Route path="/reconcile" element={<Reconcile />} />
                 <Route path="/history" element={<History />} />
                 <Route path="/history/:id" element={<HistoryDetail />} />
+                <Route path="/configs" element={<Configs />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

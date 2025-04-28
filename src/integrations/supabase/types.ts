@@ -117,6 +117,57 @@ export type Database = {
         }
         Relationships: []
       }
+      reconciliation_configs: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          source_a_id: string | null
+          source_b_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          source_a_id?: string | null
+          source_b_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          source_a_id?: string | null
+          source_b_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_configs_source_a_id_fkey"
+            columns: ["source_a_id"]
+            isOneToOne: false
+            referencedRelation: "data_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reconciliation_configs_source_b_id_fkey"
+            columns: ["source_b_id"]
+            isOneToOne: false
+            referencedRelation: "data_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reconciliation_history: {
         Row: {
           created_at: string
