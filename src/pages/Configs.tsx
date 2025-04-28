@@ -26,9 +26,12 @@ const Configs = () => {
     },
   });
 
-  const handleUseConfig = (config: DataSourceConfig) => {
+  const handleUseConfig = (config: any) => {
+    // Parse the config if it's stored as a string
+    const parsedConfig = typeof config === 'string' ? JSON.parse(config) : config;
+    
     // Store the config in session storage
-    sessionStorage.setItem('selectedConfig', JSON.stringify(config));
+    sessionStorage.setItem('selectedConfig', JSON.stringify(parsedConfig));
     navigate('/configure');
   };
 

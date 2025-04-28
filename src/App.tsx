@@ -10,6 +10,7 @@ import Configure from "./pages/Configure";
 import Reconcile from "./pages/Reconcile";
 import History from "./pages/History";
 import HistoryDetail from "./pages/HistoryDetail";
+import Configs from "./pages/Configs";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { MotionConfig } from "framer-motion";

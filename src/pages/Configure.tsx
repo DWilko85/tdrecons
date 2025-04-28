@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
@@ -6,6 +7,8 @@ import { useDataSources } from "@/hooks/useDataSources";
 import AnimatedTransition from "@/components/AnimatedTransition";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 import SaveConfigDialog from "@/components/SaveConfigDialog";
 
 const Configure = () => {
@@ -100,16 +103,29 @@ const Configure = () => {
       setSourceB(parsedConfig.sourceB);
       if (parsedConfig.mappings) {
         // Update mappings if they exist
-        setConfig(prevConfig => ({
-          ...prevConfig,
-          mappings: parsedConfig.mappings,
-          keyMapping: parsedConfig.keyMapping
-        }));
+        // Use the useDataSources hook's state update methods instead of direct setConfig
+        // Apply each mapping from the saved config
+        parsedConfig.mappings.forEach((mapping: any, index: number) => {
+          if (index === 0) {
+            updateMapping(0, mapping);
+          } else {
+            addMapping();
+            updateMapping(index, mapping);
+          }
+        });
+        
+        // Update key mapping
+        if (parsedConfig.keyMapping) {
+          updateKeyMapping(
+            parsedConfig.keyMapping.sourceAField,
+            parsedConfig.keyMapping.sourceBField
+          );
+        }
       }
       // Clear the saved config
       sessionStorage.removeItem('selectedConfig');
     }
-  }, []);
+  }, [setSourceA, setSourceB, updateMapping, addMapping, updateKeyMapping]);
 
   return (
     <div className="min-h-screen pb-16">
