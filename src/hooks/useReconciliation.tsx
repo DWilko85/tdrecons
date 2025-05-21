@@ -5,11 +5,13 @@ import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
 import { performReconciliation } from '@/utils/reconciliationUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
+import { useNavigate } from 'react-router-dom';
 
 export function useReconciliation() {
   const [reconciliationResults, setReconciliationResults] = useState<ReconciliationResult[]>([]);
   const [isReconciling, setIsReconciling] = useState(false);
   const [lastConfig, setLastConfig] = useState<DataSourceConfig | null>(null);
+  const navigate = useNavigate();
 
   // Perform the reconciliation between the two sources
   const reconcile = useCallback(async (config: DataSourceConfig) => {
@@ -39,11 +41,17 @@ export function useReconciliation() {
         // Save results to database if user is authenticated
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session?.user.id) {
-          await saveResultsToDatabase(results, config, sessionData.session.user.id);
+          const savedRecordId = await saveResultsToDatabase(results, config, sessionData.session.user.id);
+          if (savedRecordId) {
+            // Navigate to the history detail page
+            navigate(`/history/${savedRecordId}`);
+            return Promise.resolve(true);
+          }
         } else {
           console.log("User not authenticated, skipping save to database");
           // Save temporarily in session storage
           sessionStorage.setItem('tempReconciliationResults', JSON.stringify(results));
+          toast.warning("Sign in to save reconciliation results permanently");
         }
         
         toast.success(`Reconciliation complete: ${results.length} records processed`);
@@ -59,16 +67,16 @@ export function useReconciliation() {
     } finally {
       setIsReconciling(false);
     }
-  }, []);
+  }, [navigate]);
 
   // Save reconciliation results to database
   const saveResultsToDatabase = async (
     results: ReconciliationResult[], 
     config: DataSourceConfig,
     userId: string
-  ) => {
+  ): Promise<string | null> => {
     try {
-      if (!config.sourceA || !config.sourceB) return;
+      if (!config.sourceA || !config.sourceB) return null;
       
       // Calculate stats
       const stats = {
@@ -86,7 +94,7 @@ export function useReconciliation() {
       const jsonResults = JSON.parse(JSON.stringify(results)) as Json;
       
       // Save to reconciliation_history table
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('reconciliation_history')
         .insert({
           name: reconciliationName,
@@ -100,15 +108,20 @@ export function useReconciliation() {
           missing_b_records: stats.missingB,
           results: jsonResults,
           user_id: userId
-        });
+        })
+        .select('id')
+        .single();
       
       if (error) {
         console.error("Error saving reconciliation results:", error);
+        return null;
       } else {
-        console.log("Reconciliation results saved to database");
+        console.log("Reconciliation results saved to database with ID:", data.id);
+        return data.id;
       }
     } catch (err) {
       console.error("Error in saveResultsToDatabase:", err);
+      return null;
     }
   };
 

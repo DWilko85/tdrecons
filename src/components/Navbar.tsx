@@ -10,7 +10,6 @@ import { useAuth } from "@/contexts/AuthContext";
 const navigation = [
   { name: "Home", path: "/" },
   { name: "Configure", path: "/configure" },
-  { name: "Results", path: "/reconcile" },
   { name: "History", path: "/history" },
   { name: "Configs", path: "/configs" }
 ];

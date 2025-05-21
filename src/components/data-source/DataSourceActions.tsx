@@ -1,10 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { DataSourceConfig } from "@/hooks/useDataSources";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface DataSourceActionsProps {
   config: DataSourceConfig;
@@ -17,6 +18,8 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
   canReconcile,
   onReconcile,
 }) => {
+  const [isSaving, setIsSaving] = useState(false);
+
   const saveMappingsToDatabase = async () => {
     if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
       return false;
@@ -63,12 +66,15 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
 
   const handleReconcile = async () => {
     if (canReconcile) {
-      const success = await saveMappingsToDatabase();
-      if (success) {
+      setIsSaving(true);
+      try {
+        await saveMappingsToDatabase();
         onReconcile();
-      } else {
-        console.log("Failed to save mappings but continuing with reconciliation");
-        onReconcile();
+      } catch (error) {
+        console.error("Error during reconciliation:", error);
+        toast.error("Failed to start reconciliation");
+      } finally {
+        setIsSaving(false);
       }
     } else {
       toast.error("Please complete the configuration before reconciling");
@@ -82,8 +88,16 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
           className="w-full"
           size="lg"
           onClick={handleReconcile}
+          disabled={isSaving}
         >
-          Reconcile Data Sources
+          {isSaving ? (
+            <>
+              <span className="mr-2">Processing</span>
+              <span className="animate-spin">⏳</span>
+            </>
+          ) : (
+            "Reconcile Data Sources"
+          )}
         </Button>
       )}
     </div>

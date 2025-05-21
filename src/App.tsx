@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Configure from "./pages/Configure";
-import Reconcile from "./pages/Reconcile";
 import History from "./pages/History";
 import HistoryDetail from "./pages/HistoryDetail";
 import Configs from "./pages/Configs";
@@ -30,7 +29,6 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/configure" element={<Configure />} />
-                <Route path="/reconcile" element={<Reconcile />} />
                 <Route path="/history" element={<History />} />
                 <Route path="/history/:id" element={<HistoryDetail />} />
                 <Route path="/configs" element={<Configs />} />
