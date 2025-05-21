@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AnimatedTransition from "../AnimatedTransition";
 import SourceSections from "./SourceSections";
 import MappingFieldsSection from "./MappingFieldsSection";
+import DataSourceActions from "./DataSourceActions";
 
 interface DataSourceConfigProps {
   availableSources: DataSource[];
@@ -76,19 +77,32 @@ const DataSourceConfig: React.FC<DataSourceConfigProps> = ({
       </AnimatedTransition>
 
       {sourceA && sourceB && (
-        <MappingFieldsSection
-          sourceA={sourceA}
-          sourceB={sourceB}
-          mappings={mappings}
-          keyMapping={keyMapping}
-          canReconcile={canReconcile}
-          onAddMapping={handleAddMapping}
-          onUpdateMapping={onUpdateMapping}
-          onRemoveMapping={onRemoveMapping}
-          onSwapMappingFields={onSwapMappingFields}
-          onUpdateKeyMapping={onUpdateKeyMapping}
-          onReconcile={onReconcile}
-        />
+        <>
+          <MappingFieldsSection
+            sourceA={sourceA}
+            sourceB={sourceB}
+            mappings={mappings}
+            keyMapping={keyMapping}
+            canReconcile={canReconcile}
+            onAddMapping={handleAddMapping}
+            onUpdateMapping={onUpdateMapping}
+            onRemoveMapping={onRemoveMapping}
+            onSwapMappingFields={onSwapMappingFields}
+            onUpdateKeyMapping={onUpdateKeyMapping}
+            onReconcile={onReconcile}
+          />
+          
+          {/* DataSourceActions moved to bottom of page */}
+          {canReconcile && (
+            <AnimatedTransition type="slide-up" delay={0.3}>
+              <DataSourceActions
+                config={config}
+                canReconcile={canReconcile}
+                onReconcile={onReconcile}
+              />
+            </AnimatedTransition>
+          )}
+        </>
       )}
     </div>
   );

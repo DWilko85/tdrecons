@@ -61,42 +61,44 @@ const KeyMappingCard: React.FC<KeyMappingCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="pt-4 space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Principal Key Field</label>
-          <Select 
-            value={keyMapping.sourceAField}
-            onValueChange={handleSourceAKeyChange}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select key field" />
-            </SelectTrigger>
-            <SelectContent>
-              {sourceA.fields.map((field) => (
-                <SelectItem key={field} value={field}>
-                  {field}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Counterparty Key Field</label>
-          <Select 
-            value={keyMapping.sourceBField}
-            onValueChange={handleSourceBKeyChange}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select key field" />
-            </SelectTrigger>
-            <SelectContent>
-              {sourceB.fields.map((field) => (
-                <SelectItem key={field} value={field}>
-                  {field}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Principal Key Field</label>
+            <Select 
+              value={keyMapping.sourceAField}
+              onValueChange={handleSourceAKeyChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select key field" />
+              </SelectTrigger>
+              <SelectContent>
+                {sourceA.fields.map((field) => (
+                  <SelectItem key={field} value={field}>
+                    {field}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Counterparty Key Field</label>
+            <Select 
+              value={keyMapping.sourceBField}
+              onValueChange={handleSourceBKeyChange}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select key field" />
+              </SelectTrigger>
+              <SelectContent>
+                {sourceB.fields.map((field) => (
+                  <SelectItem key={field} value={field}>
+                    {field}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </CardContent>
     </Card>

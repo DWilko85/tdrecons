@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -82,24 +81,22 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
   };
 
   return (
-    <div className="w-full flex flex-col space-y-6">
-      {canReconcile && (
-        <Button
-          className="w-full"
-          size="lg"
-          onClick={handleReconcile}
-          disabled={isSaving}
-        >
-          {isSaving ? (
-            <>
-              <LoadingSpinner size="sm" className="mr-2" />
-              <span>Processing</span>
-            </>
-          ) : (
-            "Reconcile Data Sources"
-          )}
-        </Button>
-      )}
+    <div className="w-full flex justify-center pb-8">
+      <Button
+        className="w-full max-w-2xl"
+        size="lg"
+        onClick={handleReconcile}
+        disabled={isSaving || !canReconcile}
+      >
+        {isSaving ? (
+          <>
+            <LoadingSpinner size="sm" className="mr-2" />
+            <span>Processing</span>
+          </>
+        ) : (
+          "Reconcile Data Sources"
+        )}
+      </Button>
     </div>
   );
 };
