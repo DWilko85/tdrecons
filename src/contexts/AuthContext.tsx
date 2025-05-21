@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AuthContextType {
   user: User | null;
@@ -31,8 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
 
         if (event === 'SIGNED_IN') {
-          toast({
-            title: "Signed in successfully",
+          toast("Signed in successfully", {
             description: "Welcome back!",
           });
         }
@@ -57,10 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Error signing in",
+      toast.error("Error signing in", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -80,17 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (error) throw error;
       
-      toast({
-        title: "Signed up successfully",
+      toast("Signed up successfully", {
         description: "Please check your email to confirm your account.",
       });
       
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Error signing up",
+      toast.error("Error signing up", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -104,10 +98,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error;
       navigate("/auth");
     } catch (error: any) {
-      toast({
-        title: "Error signing out",
+      toast.error("Error signing out", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

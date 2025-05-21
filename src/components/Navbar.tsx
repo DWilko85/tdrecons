@@ -3,8 +3,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X } from "lucide-react";
+import { Menu, User, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navigation = [
   { name: "Home", path: "/" },
@@ -18,6 +19,7 @@ const Navbar = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   // Add scroll event listener
   useEffect(() => {
@@ -52,6 +54,31 @@ const Navbar = () => {
               <Link to={item.path}>{item.name}</Link>
             </Button>
           ))}
+          
+          {/* Auth buttons */}
+          {user ? (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2" 
+              onClick={() => signOut()}
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign Out
+            </Button>
+          ) : (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2" 
+              asChild
+            >
+              <Link to="/auth">
+                <LogIn className="mr-2 h-4 w-4" />
+                Sign In
+              </Link>
+            </Button>
+          )}
         </nav>
 
         {/* Mobile Navigation */}
@@ -77,6 +104,33 @@ const Navbar = () => {
                   <Link to={item.path}>{item.name}</Link>
                 </Button>
               ))}
+              
+              {/* Auth buttons for mobile */}
+              {user ? (
+                <Button 
+                  variant="outline" 
+                  className="justify-start mt-2" 
+                  onClick={() => {
+                    signOut();
+                    setIsSheetOpen(false);
+                  }}
+                >
+                  <User className="mr-2 h-4 w-4" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  className="justify-start mt-2" 
+                  asChild 
+                  onClick={() => setIsSheetOpen(false)}
+                >
+                  <Link to="/auth">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Sign In
+                  </Link>
+                </Button>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
