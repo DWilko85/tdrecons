@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,19 +5,27 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Menu, User, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-
-const navigation = [
-  { name: "Home", path: "/" },
-  { name: "Configure", path: "/configure" },
-  { name: "History", path: "/history" },
-  { name: "Configs", path: "/configs" }
-];
-
+const navigation = [{
+  name: "Home",
+  path: "/"
+}, {
+  name: "Configure",
+  path: "/configure"
+}, {
+  name: "History",
+  path: "/history"
+}, {
+  name: "Configs",
+  path: "/configs"
+}];
 const Navbar = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const {
+    user,
+    signOut
+  } = useAuth();
 
   // Add scroll event listener
   useEffect(() => {
@@ -28,56 +35,32 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  return (
-    <header className={cn("fixed top-0 left-0 right-0 z-40 transition-all duration-200", isScrolled ? "bg-background/80 backdrop-blur-md border-b py-3" : "bg-transparent py-5")}>
+  return <header className={cn("fixed top-0 left-0 right-0 z-40 transition-all duration-200", isScrolled ? "bg-background/80 backdrop-blur-md border-b py-3" : "bg-transparent py-5")}>
       <div className="container flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-semibold text-sm">AI</span>
+            <span className="text-primary-foreground font-semibold text-sm">TD</span>
           </div>
           <span className="font-bold text-lg">TD Reconcile</span>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {navigation.map(item => (
-            <Button 
-              key={item.name} 
-              variant="ghost" 
-              size="sm" 
-              className={cn("px-3", location.pathname === item.path ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")} 
-              asChild
-            >
+          {navigation.map(item => <Button key={item.name} variant="ghost" size="sm" className={cn("px-3", location.pathname === item.path ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")} asChild>
               <Link to={item.path}>{item.name}</Link>
-            </Button>
-          ))}
+            </Button>)}
           
           {/* Auth buttons */}
-          {user ? (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="ml-2" 
-              onClick={() => signOut()}
-            >
+          {user ? <Button variant="outline" size="sm" className="ml-2" onClick={() => signOut()}>
               <User className="mr-2 h-4 w-4" />
               Sign Out
-            </Button>
-          ) : (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="ml-2" 
-              asChild
-            >
+            </Button> : <Button variant="outline" size="sm" className="ml-2" asChild>
               <Link to="/auth">
                 <LogIn className="mr-2 h-4 w-4" />
                 Sign In
               </Link>
-            </Button>
-          )}
+            </Button>}
         </nav>
 
         {/* Mobile Navigation */}
@@ -92,50 +75,27 @@ const Navbar = () => {
               <SheetTitle>AI Reconcile</SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-1 mt-6">
-              {navigation.map(item => (
-                <Button 
-                  key={item.name} 
-                  variant={location.pathname === item.path ? "secondary" : "ghost"} 
-                  className="justify-start" 
-                  asChild 
-                  onClick={() => setIsSheetOpen(false)}
-                >
+              {navigation.map(item => <Button key={item.name} variant={location.pathname === item.path ? "secondary" : "ghost"} className="justify-start" asChild onClick={() => setIsSheetOpen(false)}>
                   <Link to={item.path}>{item.name}</Link>
-                </Button>
-              ))}
+                </Button>)}
               
               {/* Auth buttons for mobile */}
-              {user ? (
-                <Button 
-                  variant="outline" 
-                  className="justify-start mt-2" 
-                  onClick={() => {
-                    signOut();
-                    setIsSheetOpen(false);
-                  }}
-                >
+              {user ? <Button variant="outline" className="justify-start mt-2" onClick={() => {
+              signOut();
+              setIsSheetOpen(false);
+            }}>
                   <User className="mr-2 h-4 w-4" />
                   Sign Out
-                </Button>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  className="justify-start mt-2" 
-                  asChild 
-                  onClick={() => setIsSheetOpen(false)}
-                >
+                </Button> : <Button variant="outline" className="justify-start mt-2" asChild onClick={() => setIsSheetOpen(false)}>
                   <Link to="/auth">
                     <LogIn className="mr-2 h-4 w-4" />
                     Sign In
                   </Link>
-                </Button>
-              )}
+                </Button>}
             </nav>
           </SheetContent>
         </Sheet>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Navbar;
