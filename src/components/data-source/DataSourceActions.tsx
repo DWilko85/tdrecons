@@ -92,8 +92,8 @@ const DataSourceActions: React.FC<DataSourceActionsProps> = ({
         >
           {isSaving ? (
             <>
-              <span className="mr-2">Processing</span>
-              <span className="animate-spin">⏳</span>
+              <LoadingSpinner size="sm" className="mr-2" />
+              <span>Processing</span>
             </>
           ) : (
             "Reconcile Data Sources"
