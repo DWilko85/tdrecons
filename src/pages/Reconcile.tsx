@@ -1,72 +1,65 @@
 
-import React, { useEffect } from "react";
-import Navbar from "@/components/Navbar";
-import ReconcileHeader from "@/components/reconciliation/ReconcileHeader";
-import ReconciliationContent from "@/components/reconciliation/ReconciliationContent";
-import { useReconcilePageState } from "@/hooks/useReconcilePageState";
-import { useDataSources } from "@/hooks/useDataSources";
+import React from 'react';
+import { useDataSources } from '@/hooks/useDataSources';
+import { useReconcilePageState } from '@/hooks/useReconcilePageState';
+import ReconciliationContent from '@/components/reconciliation/ReconciliationContent';
+import ReconcileHeader from '@/components/reconciliation/ReconcileHeader';
+import NoConfigMessage from '@/components/reconciliation/NoConfigMessage';
+import NoResultsMessage from '@/components/reconciliation/NoResultsMessage';
+import LoadingState from '@/components/reconciliation/LoadingState';
+import { useAuth } from '@/contexts/AuthContext';
+import ClientRequired from '@/components/ClientRequired';
 
 const Reconcile = () => {
-  const {
-    config,
+  const { 
+    config, 
     reconciliationResults,
     isReconciling,
-    isSaving,
-    stats,
-    isPerfectMatch,
-    shouldShowNoConfigMessage,
-    shouldShowNoResultsMessage,
-    shouldShowResults,
-    shouldShowLoading,
-    handleReconcile,
-    saveReconciliation
-  } = useReconcilePageState();
+    reconcile,
+    clearResults
+  } = useDataSources();
+  
+  const { mode, setMode } = useReconcilePageState();
+  const { currentClient } = useAuth();
 
-  const { setReconciliationResults } = useDataSources();
-
-  // Load saved results from sessionStorage on component mount
-  useEffect(() => {
-    try {
-      const storedResults = sessionStorage.getItem('tempReconciliationResults');
-      if (storedResults && reconciliationResults.length === 0) {
-        const parsedResults = JSON.parse(storedResults);
-        if (Array.isArray(parsedResults) && parsedResults.length > 0) {
-          console.log("Loading stored reconciliation results from session storage");
-          setReconciliationResults(parsedResults);
-        }
-      }
-    } catch (err) {
-      console.error("Error loading stored results:", err);
+  const handleReconcile = () => {
+    if (!currentClient) {
+      return;
     }
-  }, [reconciliationResults.length, setReconciliationResults]);
+    reconcile();
+  };
+
+  const renderContent = () => {
+    if (isReconciling) {
+      return <LoadingState />;
+    }
+    
+    if (mode === 'results' && reconciliationResults.length > 0) {
+      return (
+        <ReconciliationContent 
+          results={reconciliationResults} 
+          onBack={() => {
+            setMode('reconcile');
+            clearResults();
+          }}
+        />
+      );
+    }
+    
+    if (!config.sourceA || !config.sourceB) {
+      return <NoConfigMessage />;
+    }
+    
+    return <NoResultsMessage onReconcile={handleReconcile} isLoading={isReconciling} />;
+  };
 
   return (
-    <div className="min-h-screen pb-16">
-      <Navbar />
-      
-      <section className="pt-28 pb-8">
-        <div className="container max-w-6xl">
-          <ReconcileHeader
-            isReconciling={isReconciling}
-            hasResults={reconciliationResults.length > 0}
-            onReconcile={handleReconcile}
-          />
-        </div>
-      </section>
-      
-      <ReconciliationContent 
-        config={config}
-        reconciliationResults={reconciliationResults}
-        isReconciling={isReconciling}
-        isPerfectMatch={isPerfectMatch}
-        shouldShowNoConfigMessage={shouldShowNoConfigMessage}
-        shouldShowNoResultsMessage={shouldShowNoResultsMessage}
-        shouldShowResults={shouldShowResults}
-        shouldShowLoading={shouldShowLoading}
-        stats={stats}
-        onReconcile={handleReconcile}
-      />
-    </div>
+    <ClientRequired>
+      <div className="container max-w-7xl mx-auto p-4 space-y-6">
+        <ReconcileHeader />
+        {renderContent()}
+      </div>
+    </ClientRequired>
   );
 };
 

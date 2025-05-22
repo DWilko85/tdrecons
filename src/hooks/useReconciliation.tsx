@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
@@ -25,7 +24,10 @@ export function useReconciliation() {
     // Check if user is authenticated and has a selected client
     if (!user) {
       toast.warning("You need to sign in to save reconciliation results");
-    } else if (!currentClient) {
+      return Promise.resolve(false);
+    } 
+    
+    if (!currentClient) {
       toast.error("No client selected. Please select a client first");
       return Promise.resolve(false);
     }

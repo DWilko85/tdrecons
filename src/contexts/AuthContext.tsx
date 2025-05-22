@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
@@ -55,10 +54,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (clients?.length) {
           setAvailableClients(clients);
-          // Set the first client as current if there's no current client
-          if (!currentClient) {
+          
+          // Try to load previously selected client from localStorage
+          const savedClientId = localStorage.getItem('currentClientId');
+          
+          if (savedClientId) {
+            // Check if the saved client is in available clients
+            const savedClient = clients.find(c => c.id === savedClientId);
+            if (savedClient) {
+              setCurrentClient(savedClient);
+              return; // Exit early if we found and set the saved client
+            }
+          }
+          
+          // If no saved client or saved client not found in available clients,
+          // automatically set the first client as current if there's only one
+          if (clients.length === 1) {
             setCurrentClient(clients[0]);
-            // Store in local storage to persist the selection
+            localStorage.setItem('currentClientId', clients[0].id);
+          } else if (!currentClient && clients.length > 0) {
+            // If multiple clients but none selected, select the first one
+            setCurrentClient(clients[0]);
             localStorage.setItem('currentClientId', clients[0].id);
           }
         }
@@ -105,24 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Try to load previously selected client from localStorage
-        const savedClientId = localStorage.getItem('currentClientId');
-        if (savedClientId) {
-          supabase
-            .from('clients')
-            .select('*')
-            .eq('id', savedClientId)
-            .single()
-            .then(({ data, error }) => {
-              if (!error && data) {
-                setCurrentClient(data);
-              }
-              // Load all available clients regardless
-              loadUserClients(session.user.id);
-            });
-        } else {
-          loadUserClients(session.user.id);
-        }
+        loadUserClients(session.user.id);
       }
       
       setLoading(false);
