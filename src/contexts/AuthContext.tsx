@@ -1,10 +1,11 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { Client } from "@/types/client";
-import { cleanupAuthState } from "@/utils/authUtils";
+import { useClientState } from "@/hooks/useClientState";
+import { signIn as authSignIn, signUp as authSignUp, signOut as authSignOut } from "@/services/authService";
 
 interface AuthContextType {
   user: User | null;
@@ -23,71 +24,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [currentClient, setCurrentClient] = useState<Client | null>(null);
-  const [availableClients, setAvailableClients] = useState<Client[]>([]);
+  const [authLoading, setAuthLoading] = useState(true);
   const navigate = useNavigate();
-
-  // Load user's clients
-  const loadUserClients = async (userId: string) => {
-    try {
-      const { data: userClients, error: userClientsError } = await supabase
-        .from('user_clients')
-        .select('client_id')
-        .eq('user_id', userId);
-
-      if (userClientsError) {
-        throw userClientsError;
-      }
-
-      if (userClients?.length) {
-        const clientIds = userClients.map(uc => uc.client_id);
-        
-        const { data: clients, error: clientsError } = await supabase
-          .from('clients')
-          .select('*')
-          .in('id', clientIds);
-
-        if (clientsError) {
-          throw clientsError;
-        }
-
-        if (clients?.length) {
-          setAvailableClients(clients);
-          
-          // Try to load previously selected client from localStorage
-          const savedClientId = localStorage.getItem('currentClientId');
-          
-          if (savedClientId) {
-            // Check if the saved client is in available clients
-            const savedClient = clients.find(c => c.id === savedClientId);
-            if (savedClient) {
-              setCurrentClient(savedClient);
-              return; // Exit early if we found and set the saved client
-            }
-          }
-          
-          // If no saved client or saved client not found in available clients,
-          // automatically set the first client as current if there's only one
-          if (clients.length === 1) {
-            setCurrentClient(clients[0]);
-            localStorage.setItem('currentClientId', clients[0].id);
-          } else if (!currentClient && clients.length > 0) {
-            // If multiple clients but none selected, select the first one
-            setCurrentClient(clients[0]);
-            localStorage.setItem('currentClientId', clients[0].id);
-          }
-        }
-      } else {
-        console.log("User doesn't belong to any clients");
-        setAvailableClients([]);
-        setCurrentClient(null);
-      }
-    } catch (error) {
-      console.error("Error loading user clients:", error);
-      toast.error("Failed to load client information");
-    }
-  };
+  
+  // Use our custom hook for client state management
+  const { 
+    currentClient, 
+    availableClients, 
+    loading: clientsLoading, 
+    setCurrentClient: handleSetCurrentClient,
+    loadUserClients
+  } = useClientState(user?.id);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -97,9 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
 
         if (event === 'SIGNED_IN') {
-          toast.success("Signed in successfully", {
-            description: "Welcome back!",
-          });
+          console.log("Auth state change: SIGNED_IN");
           
           // Defer loading client data to prevent deadlocks
           if (session?.user) {
@@ -108,8 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
-          setCurrentClient(null);
-          setAvailableClients([]);
+          console.log("Auth state change: SIGNED_OUT");
+          handleSetCurrentClient(null);
           localStorage.removeItem('currentClientId');
         }
       }
@@ -119,122 +64,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        loadUserClients(session.user.id);
-      }
-      
-      setLoading(false);
+      setAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    setAuthLoading(true);
     try {
-      setLoading(true);
-      // Clean up existing auth state
-      cleanupAuthState();
-      
-      // Attempt global sign out first
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continue even if this fails
-      }
-      
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      
-      if (error) throw error;
-      
-      // Force page reload for clean state
-      window.location.href = "/";
-    } catch (error: any) {
-      toast.error("Error signing in", {
-        description: error.message,
-      });
+      await authSignIn(email, password);
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const signUp = async (email: string, password: string, userData?: { username?: string; full_name?: string; client_id?: string }) => {
+    setAuthLoading(true);
     try {
-      setLoading(true);
-      // Clean up existing auth state
-      cleanupAuthState();
-      
-      const { error, data } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          data: userData,
-        },
-      });
-      
-      if (error) throw error;
-      
-      // Create user-client association if client_id is provided
-      if (data.user && userData?.client_id) {
-        const { error: clientError } = await supabase
-          .from('user_clients')
-          .insert({
-            user_id: data.user.id,
-            client_id: userData.client_id
-          });
-          
-        if (clientError) {
-          console.error("Error associating user with client:", clientError);
-          toast.error("Failed to associate user with client", {
-            description: clientError.message,
-          });
-        }
+      const result = await authSignUp(email, password, userData);
+      if (result.success) {
+        navigate("/");
       }
-      
-      toast.success("Signed up successfully", {
-        description: "Please check your email to confirm your account.",
-      });
-      
-      navigate("/");
-    } catch (error: any) {
-      toast.error("Error signing up", {
-        description: error.message,
-      });
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
   const signOut = async () => {
+    setAuthLoading(true);
     try {
-      setLoading(true);
-      // Clean up auth state
-      cleanupAuthState();
-      
-      // Attempt global sign out
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
-      if (error) throw error;
-      
-      // Clear client state
-      setCurrentClient(null);
-      setAvailableClients([]);
-      localStorage.removeItem('currentClientId');
-      
-      // Force page reload
-      window.location.href = "/auth";
-    } catch (error: any) {
-      toast.error("Error signing out", {
-        description: error.message,
-      });
+      await authSignOut();
     } finally {
-      setLoading(false);
+      setAuthLoading(false);
     }
   };
 
-  const handleSetCurrentClient = (client: Client) => {
-    setCurrentClient(client);
-    localStorage.setItem('currentClientId', client.id);
-  };
+  // Combine loading states
+  const loading = authLoading || clientsLoading;
 
   return (
     <AuthContext.Provider value={{ 

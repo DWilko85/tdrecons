@@ -20,6 +20,7 @@ const ClientRequired: React.FC<ClientRequiredProps> = ({ children }) => {
     if (!loading && !currentClient && availableClients.length === 1) {
       console.log("Auto-selecting the only available client:", availableClients[0].name);
       setCurrentClient(availableClients[0]);
+      toast.info(`Selected client: ${availableClients[0].name}`);
     }
   }, [loading, currentClient, availableClients, setCurrentClient]);
 
