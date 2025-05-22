@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { DataSource, FieldMapping } from "@/types/dataSources";
 import FieldMappingsCard from "./FieldMappingsCard";
 import KeyMappingCard from "./KeyMappingCard";
@@ -37,6 +37,21 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
   onUpdateKeyMapping,
   onReconcile,
 }) => {
+  // Add state to track if reconciliation is in progress
+  const [isReconciling, setIsReconciling] = useState(false);
+  
+  // Wrap onReconcile to manage loading state
+  const handleReconcile = async () => {
+    if (!canReconcile) return;
+    
+    setIsReconciling(true);
+    try {
+      await onReconcile();
+    } finally {
+      setIsReconciling(false);
+    }
+  };
+  
   return (
     <div className="space-y-6">
       {/* Key mapping card - now full width */}
@@ -65,8 +80,9 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
       {canReconcile && (
         <div className="mt-8">
           <ReconcileButton
-            onClick={onReconcile}
+            onClick={handleReconcile}
             disabled={!canReconcile}
+            isLoading={isReconciling}
           />
         </div>
       )}
