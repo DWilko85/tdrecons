@@ -11,6 +11,7 @@ import AnimatedTransition from "@/components/AnimatedTransition";
 import { Database, RefreshCw, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import ClientRequired from "@/components/ClientRequired";
 
 const History = () => {
   const { user, currentClient } = useAuth();
@@ -20,7 +21,7 @@ const History = () => {
       return [];
     }
     
-    console.log("Fetching reconciliation history for client:", currentClient.id);
+    console.log("Fetching reconciliation history for client:", currentClient.id, currentClient.name);
     
     const { data, error } = await supabase
       .from('reconciliation_history')
@@ -93,78 +94,59 @@ const History = () => {
     );
   }
 
-  if (!currentClient) {
-    return (
+  return (
+    <ClientRequired>
       <div className="min-h-screen pb-16">
         <Navbar />
+
+        {/* Header */}
         <section className="pt-28 pb-8">
           <div className="container max-w-6xl">
             <AnimatedTransition type="slide-down" delay={0.1}>
               <div className="text-center max-w-3xl mx-auto">
-                <h1 className="text-3xl font-bold mb-3">No Client Selected</h1>
-                <p className="text-muted-foreground text-lg mb-4">
-                  Please select a client to view reconciliation history
-                </p>
-                <div className="flex justify-center">
-                  <Building className="h-20 w-20 text-muted-foreground opacity-30" />
-                </div>
+                <h1 className="text-3xl font-bold mb-3">Reconciliation History</h1>
+                {currentClient && (
+                  <p className="text-muted-foreground text-lg">
+                    Viewing reconciliation history for {currentClient.name}
+                  </p>
+                )}
               </div>
             </AnimatedTransition>
           </div>
         </section>
-      </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen pb-16">
-      <Navbar />
+        {/* History List */}
+        <section>
+          <div className="container max-w-6xl">
+            {isLoading ? (
+              <div className="text-center py-20">
+                <RefreshCw className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
+                <h2 className="text-xl font-medium mb-2">Loading History</h2>
+                <p className="text-muted-foreground">Fetching your reconciliation history...</p>
+              </div>
+            ) : history && history.length > 0 ? (
+              <HistoryList items={history} />
+            ) : (
+              <div className="text-center py-20">
+                <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+                <h2 className="text-xl font-medium mb-2">No History Available</h2>
+                <p className="text-muted-foreground mb-6">Start a new reconciliation to populate your history</p>
+                <Button asChild>
+                  <Link to="/configure">Start Reconciling</Link>
+                </Button>
+              </div>
+            )}
 
-      {/* Header */}
-      <section className="pt-28 pb-8">
-        <div className="container max-w-6xl">
-          <AnimatedTransition type="slide-down" delay={0.1}>
-            <div className="text-center max-w-3xl mx-auto">
-              <h1 className="text-3xl font-bold mb-3">Reconciliation History</h1>
-              <p className="text-muted-foreground text-lg">
-                Viewing reconciliation history for {currentClient.name}
-              </p>
-            </div>
-          </AnimatedTransition>
-        </div>
-      </section>
-
-      {/* History List */}
-      <section>
-        <div className="container max-w-6xl">
-          {isLoading ? (
-            <div className="text-center py-20">
-              <RefreshCw className="h-10 w-10 text-muted-foreground mx-auto mb-4 animate-spin" />
-              <h2 className="text-xl font-medium mb-2">Loading History</h2>
-              <p className="text-muted-foreground">Fetching your reconciliation history...</p>
-            </div>
-          ) : history && history.length > 0 ? (
-            <HistoryList items={history} />
-          ) : (
-            <div className="text-center py-20">
-              <Database className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-medium mb-2">No History Available</h2>
-              <p className="text-muted-foreground mb-6">Start a new reconciliation to populate your history</p>
-              <Button asChild>
-                <Link to="/configure">Start Reconciling</Link>
+            <div className="mt-8 text-center">
+              <Button variant="outline" onClick={() => refetch()}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh History
               </Button>
             </div>
-          )}
-
-          <div className="mt-8 text-center">
-            <Button variant="outline" onClick={() => refetch()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Refresh History
-            </Button>
           </div>
-        </div>
-      </section>
-    </div>
+        </section>
+      </div>
+    </ClientRequired>
   );
 };
 

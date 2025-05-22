@@ -1,18 +1,27 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Building } from "lucide-react";
+import { toast } from "sonner";
 
 interface ClientRequiredProps {
   children: React.ReactNode;
 }
 
 const ClientRequired: React.FC<ClientRequiredProps> = ({ children }) => {
-  const { currentClient, availableClients, loading } = useAuth();
+  const { currentClient, availableClients, loading, setCurrentClient } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Auto-select a client if there's only one available
+    if (!loading && !currentClient && availableClients.length === 1) {
+      console.log("Auto-selecting the only available client:", availableClients[0].name);
+      setCurrentClient(availableClients[0]);
+    }
+  }, [loading, currentClient, availableClients, setCurrentClient]);
 
   if (loading) {
     return <div className="flex items-center justify-center h-full">Loading...</div>;
@@ -61,10 +70,7 @@ const ClientRequired: React.FC<ClientRequiredProps> = ({ children }) => {
               key={client.id}
               variant="outline"
               className="w-full justify-start text-left"
-              onClick={() => {
-                const { setCurrentClient } = useAuth();
-                setCurrentClient(client);
-              }}
+              onClick={() => setCurrentClient(client)}
             >
               {client.name}
             </Button>

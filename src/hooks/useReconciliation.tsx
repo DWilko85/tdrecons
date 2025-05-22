@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { DataSourceConfig, ReconciliationResult } from '@/types/dataSources';
@@ -24,11 +25,13 @@ export function useReconciliation() {
     // Check if user is authenticated and has a selected client
     if (!user) {
       toast.warning("You need to sign in to save reconciliation results");
+      navigate("/auth");
       return Promise.resolve(false);
     } 
     
     if (!currentClient) {
       toast.error("No client selected. Please select a client first");
+      navigate("/");
       return Promise.resolve(false);
     }
     
@@ -121,16 +124,18 @@ export function useReconciliation() {
           missing_b_records: stats.missingB,
           results: jsonResults,
           user_id: userId,
-          client_id: clientId // Add the client ID
+          client_id: clientId
         })
         .select('id')
         .single();
       
       if (error) {
         console.error("Error saving reconciliation results:", error);
+        toast.error("Failed to save reconciliation results");
         return null;
       } else {
         console.log("Reconciliation results saved to database with ID:", data.id);
+        toast.success("Reconciliation results saved successfully");
         return data.id;
       }
     } catch (err) {

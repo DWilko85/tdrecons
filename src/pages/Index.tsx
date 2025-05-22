@@ -1,18 +1,30 @@
-import React from "react";
+
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Upload, History, GitCompare, Settings, FileText } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const Index = () => {
   const { user, availableClients, currentClient, setCurrentClient } = useAuth();
+
+  // Auto-select the first client if user has clients but none selected
+  useEffect(() => {
+    if (user && availableClients.length > 0 && !currentClient) {
+      console.log("Auto-selecting first client:", availableClients[0].name);
+      setCurrentClient(availableClients[0]);
+      toast.info(`Selected client: ${availableClients[0].name}`);
+    }
+  }, [user, availableClients, currentClient, setCurrentClient]);
 
   const handleClientChange = (clientId: string) => {
     const client = availableClients.find(c => c.id === clientId);
     if (client) {
       setCurrentClient(client);
+      toast.success(`Switched to client: ${client.name}`);
     }
   };
 
