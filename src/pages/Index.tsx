@@ -66,7 +66,7 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">AI-Assisted Matching</h3>
+                <h3 className="text-xl font-semibold mb-2">Assisted Matching</h3>
                 <p className="text-muted-foreground">
                   Intelligent field mapping suggestions and smart reconciliation
                 </p>
