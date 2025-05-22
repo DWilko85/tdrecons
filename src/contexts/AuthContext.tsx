@@ -15,7 +15,7 @@ interface AuthContextType {
   availableClients: Client[];
   setCurrentClient: (client: Client) => void;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, userData?: { username?: string; full_name?: string }) => Promise<void>;
+  signUp: (email: string, password: string, userData?: { username?: string; full_name?: string; client_id?: string }) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -159,13 +159,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, userData?: { username?: string; full_name?: string }) => {
+  const signUp = async (email: string, password: string, userData?: { username?: string; full_name?: string; client_id?: string }) => {
     try {
       setLoading(true);
       // Clean up existing auth state
       cleanupAuthState();
       
-      const { error } = await supabase.auth.signUp({ 
+      const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
@@ -174,6 +174,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       
       if (error) throw error;
+      
+      // Create user-client association if client_id is provided
+      if (data.user && userData?.client_id) {
+        const { error: clientError } = await supabase
+          .from('user_clients')
+          .insert({
+            user_id: data.user.id,
+            client_id: userData.client_id
+          });
+          
+        if (clientError) {
+          console.error("Error associating user with client:", clientError);
+          toast.error("Failed to associate user with client", {
+            description: clientError.message,
+          });
+        }
+      }
       
       toast.success("Signed up successfully", {
         description: "Please check your email to confirm your account.",

@@ -1,12 +1,16 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
+import { Client } from "@/types/client";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const signupSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters" }),
@@ -14,6 +18,7 @@ const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  clientId: z.string({ required_error: "Please select a client" }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -23,6 +28,8 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
   const { signUp, loading } = useAuth();
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loadingClients, setLoadingClients] = useState(true);
   
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -32,13 +39,39 @@ export function SignupForm() {
       email: "",
       password: "",
       confirmPassword: "",
+      clientId: "",
     },
   });
+
+  // Fetch available clients when component mounts
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        const { data, error } = await supabase
+          .from('clients')
+          .select('*')
+          .order('name');
+          
+        if (error) throw error;
+        
+        setClients(data || []);
+      } catch (error: any) {
+        toast.error("Failed to load clients", {
+          description: error.message
+        });
+      } finally {
+        setLoadingClients(false);
+      }
+    }
+    
+    fetchClients();
+  }, []);
 
   const onSubmit = async (data: SignupFormValues) => {
     await signUp(data.email, data.password, {
       username: data.username,
-      full_name: data.fullName
+      full_name: data.fullName,
+      client_id: data.clientId
     });
   };
 
@@ -110,7 +143,35 @@ export function SignupForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-full" disabled={loading}>
+        <FormField
+          control={form.control}
+          name="clientId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Client</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+                disabled={loadingClients}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" className="w-full" disabled={loading || loadingClients}>
           {loading ? "Creating Account..." : "Create Account"}
         </Button>
       </form>

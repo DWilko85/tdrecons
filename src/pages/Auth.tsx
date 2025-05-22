@@ -40,6 +40,9 @@ const Auth = () => {
                 <LoginForm />
               </TabsContent>
               <TabsContent value="signup">
+                <div className="mb-4 text-sm text-muted-foreground">
+                  To create an account, please provide your information and select a client to associate with.
+                </div>
                 <SignupForm />
               </TabsContent>
             </Tabs>
