@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       data_sources: {
         Row: {
           created_at: string
@@ -170,6 +191,7 @@ export type Database = {
       }
       reconciliation_history: {
         Row: {
+          client_id: string
           created_at: string
           description: string | null
           different_records: number
@@ -185,6 +207,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          client_id: string
           created_at?: string
           description?: string | null
           different_records: number
@@ -200,6 +223,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          client_id?: string
           created_at?: string
           description?: string | null
           different_records?: number
@@ -214,7 +238,15 @@ export type Database = {
           total_records?: number
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "reconciliation_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       templates: {
         Row: {
@@ -252,6 +284,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_clients: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -264,6 +325,10 @@ export type Database = {
       initialize_data_sources_table: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      user_belongs_to_client: {
+        Args: { user_uuid: string; client_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {

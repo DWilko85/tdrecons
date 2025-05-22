@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import StatCard from "@/components/StatCard";
@@ -9,15 +9,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReconciliationHistory } from "@/types/reconciliation";
 import AnimatedTransition from "@/components/AnimatedTransition";
-import { ArrowLeft, CheckCircle, XCircle, AlertTriangle, Database } from "lucide-react";
+import { ArrowLeft, CheckCircle, XCircle, AlertTriangle, Database, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
+import { useAuth } from "@/contexts/AuthContext";
 
 const HistoryDetail = () => {
   const { id } = useParams();
+  const { user, currentClient } = useAuth();
 
   const fetchHistoryDetail = async () => {
     if (!id) throw new Error("No history ID provided");
+    if (!user) throw new Error("User not authenticated");
+    if (!currentClient) throw new Error("No client selected");
 
     console.log("Fetching history detail for ID:", id);
     
@@ -25,6 +29,7 @@ const HistoryDetail = () => {
       .from('reconciliation_history')
       .select('*')
       .eq('id', id)
+      .eq('client_id', currentClient.id) // Ensure we only fetch records for current client
       .single();
 
     if (error) {
@@ -53,11 +58,12 @@ const HistoryDetail = () => {
     isLoading, 
     error
   } = useQuery({
-    queryKey: ['reconciliation-history', id],
+    queryKey: ['reconciliation-history', id, currentClient?.id],
     queryFn: fetchHistoryDetail,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 1,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    enabled: !!user && !!currentClient
   });
 
   React.useEffect(() => {
@@ -66,6 +72,30 @@ const HistoryDetail = () => {
       toast.error("Failed to load reconciliation details");
     }
   }, [error]);
+
+  // Redirect to auth if not logged in
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Show message if no client selected
+  if (!currentClient) {
+    return (
+      <div className="min-h-screen">
+        <Navbar />
+        <div className="container max-w-6xl pt-28">
+          <div className="text-center py-20">
+            <Building className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-medium mb-2">No Client Selected</h2>
+            <p className="text-muted-foreground mb-6">Please select a client to view reconciliation details</p>
+            <Button asChild>
+              <Link to="/history">Back to History</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -90,7 +120,7 @@ const HistoryDetail = () => {
           <div className="text-center py-20">
             <AlertTriangle className="h-10 w-10 text-amber-500 mx-auto mb-4" />
             <h2 className="text-xl font-medium mb-2">Reconciliation Not Found</h2>
-            <p className="text-muted-foreground mb-6">The reconciliation record you're looking for doesn't exist</p>
+            <p className="text-muted-foreground mb-6">The reconciliation record you're looking for doesn't exist or you don't have access to it</p>
             <Button asChild>
               <Link to="/history">Back to History</Link>
             </Button>

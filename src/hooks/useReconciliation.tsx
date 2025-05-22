@@ -6,17 +6,27 @@ import { performReconciliation } from '@/utils/reconciliationUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useReconciliation() {
   const [reconciliationResults, setReconciliationResults] = useState<ReconciliationResult[]>([]);
   const [isReconciling, setIsReconciling] = useState(false);
   const [lastConfig, setLastConfig] = useState<DataSourceConfig | null>(null);
   const navigate = useNavigate();
+  const { user, currentClient } = useAuth();
 
   // Perform the reconciliation between the two sources
   const reconcile = useCallback(async (config: DataSourceConfig) => {
     if (!config.sourceA || !config.sourceB || config.mappings.length === 0) {
       toast.error("Please configure both data sources and field mappings");
+      return Promise.resolve(false);
+    }
+    
+    // Check if user is authenticated and has a selected client
+    if (!user) {
+      toast.warning("You need to sign in to save reconciliation results");
+    } else if (!currentClient) {
+      toast.error("No client selected. Please select a client first");
       return Promise.resolve(false);
     }
     
@@ -38,20 +48,20 @@ export function useReconciliation() {
       setReconciliationResults(results);
       
       if (results.length > 0) {
-        // Save results to database if user is authenticated
+        // Save results to database if user is authenticated and has a selected client
         const { data: sessionData } = await supabase.auth.getSession();
-        if (sessionData.session?.user.id) {
-          const savedRecordId = await saveResultsToDatabase(results, config, sessionData.session.user.id);
+        if (sessionData.session?.user.id && currentClient) {
+          const savedRecordId = await saveResultsToDatabase(results, config, sessionData.session.user.id, currentClient.id);
           if (savedRecordId) {
             // Navigate to the history detail page
             navigate(`/history/${savedRecordId}`);
             return Promise.resolve(true);
           }
         } else {
-          console.log("User not authenticated, skipping save to database");
+          console.log("User not authenticated or no client selected, skipping save to database");
           // Save temporarily in session storage
           sessionStorage.setItem('tempReconciliationResults', JSON.stringify(results));
-          toast.warning("Sign in to save reconciliation results permanently");
+          toast.warning("Sign in and select a client to save reconciliation results permanently");
         }
         
         toast.success(`Reconciliation complete: ${results.length} records processed`);
@@ -67,13 +77,14 @@ export function useReconciliation() {
     } finally {
       setIsReconciling(false);
     }
-  }, [navigate]);
+  }, [navigate, user, currentClient]);
 
   // Save reconciliation results to database
   const saveResultsToDatabase = async (
     results: ReconciliationResult[], 
     config: DataSourceConfig,
-    userId: string
+    userId: string,
+    clientId: string
   ): Promise<string | null> => {
     try {
       if (!config.sourceA || !config.sourceB) return null;
@@ -93,7 +104,7 @@ export function useReconciliation() {
       // Convert results to a JSON-compatible format using JSON.stringify and parse
       const jsonResults = JSON.parse(JSON.stringify(results)) as Json;
       
-      // Save to reconciliation_history table
+      // Save to reconciliation_history table with client_id
       const { data, error } = await supabase
         .from('reconciliation_history')
         .insert({
@@ -107,7 +118,8 @@ export function useReconciliation() {
           missing_a_records: stats.missingA,
           missing_b_records: stats.missingB,
           results: jsonResults,
-          user_id: userId
+          user_id: userId,
+          client_id: clientId // Add the client ID
         })
         .select('id')
         .single();

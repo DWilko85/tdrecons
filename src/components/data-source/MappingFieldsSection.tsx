@@ -3,6 +3,7 @@ import React from "react";
 import { DataSource, FieldMapping } from "@/types/dataSources";
 import FieldMappingsCard from "./FieldMappingsCard";
 import KeyMappingCard from "./KeyMappingCard";
+import ReconcileButton from "./ReconcileButton";
 
 interface MappingFieldsSectionProps {
   sourceA: DataSource | null;
@@ -61,6 +62,14 @@ const MappingFieldsSection: React.FC<MappingFieldsSectionProps> = ({
       />
       
       {/* Reconcile button now moved to bottom */}
+      {canReconcile && (
+        <div className="mt-8">
+          <ReconcileButton
+            onClick={onReconcile}
+            disabled={!canReconcile}
+          />
+        </div>
+      )}
     </div>
   );
 };
